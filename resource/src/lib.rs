@@ -21,8 +21,8 @@ pub struct Process {
 
 const BASIC_MEM_QUOTA: i32 = 1024; /* 基础内存配额 */
 
-pub fn compute_cost(process : &Process, total : &mut i32, penalty : &mut i32) {
-    for allocation in process.allocations.iter() {
+pub fn compute_cost(proc : &Process, total : &mut i32, penalty : &mut i32) {
+    for allocation in proc.allocations.iter() {
         let mut cost = 0;
         let exceed;
         match allocation.resource.resource_type {
@@ -52,7 +52,7 @@ pub fn compute_cost(process : &Process, total : &mut i32, penalty : &mut i32) {
                 }
             }
         }
-        
+
         /* 如果是 IO 资源且使用时间 > 12s，对 penalty 计数加1 */
         if allocation.resource.resource_type == ResourceType::Storage && allocation.usage_time > 12 {
             *penalty += 1;
