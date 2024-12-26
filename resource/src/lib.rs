@@ -19,12 +19,12 @@ pub struct Process {
     allocations: Vec<Allocation>,
 }
 
-static BASIC_MEM_QUOTA: i32 = 1024; /* 基础内存配额 */
+const BASIC_MEM_QUOTA: i32 = 1024; /* 基础内存配额 */
 
 pub fn compute_cost(process : &Process, total : &mut i32, penalty : &mut i32) {
     for allocation in process.allocations.iter() {
         let mut cost = 0;
-        let mut exceed = 0;
+        let exceed;
         match allocation.resource.resource_type {
             ResourceType::CPU => {
                 /* 基本cost为50，使用时间大于2s则额外统计 */
@@ -52,10 +52,7 @@ pub fn compute_cost(process : &Process, total : &mut i32, penalty : &mut i32) {
                 }
             }
         }
-
-        println!("cost: {}", cost);
-        println!("exceed: {}", exceed);
-
+        
         /* 如果是 IO 资源且使用时间 > 12s，对 penalty 计数加1 */
         if allocation.resource.resource_type == ResourceType::Storage && allocation.usage_time > 12 {
             *penalty += 1;
