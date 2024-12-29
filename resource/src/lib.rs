@@ -24,13 +24,12 @@ const BASIC_MEM_QUOTA: i32 = 1024; /* 基础内存配额 */
 pub fn compute_cost(proc : &Process, total : &mut i32, penalty : &mut i32) {
     for allocation in proc.allocations.iter() {
         let mut cost = 0;
-        let exceed;
         match allocation.resource.resource_type {
             ResourceType::CPU => {
                 /* 基本cost为50，使用时间大于2s则额外统计 */
                 cost += 50;
                 if allocation.usage_time > 2 {
-                    exceed = allocation.usage_time - 2;
+                    let exceed = allocation.usage_time - 2;
                     cost += exceed * 10;
                 }
             }
@@ -38,7 +37,7 @@ pub fn compute_cost(proc : &Process, total : &mut i32, penalty : &mut i32) {
                 /* 基本cost为30，如果容量超过 BASIC_MEM_QUOTA 则按超出部分和使用时间统计 */
                 cost += 30;
                 if allocation.resource.capacity > BASIC_MEM_QUOTA {
-                    exceed = allocation.resource.capacity - BASIC_MEM_QUOTA;
+                    let exceed = allocation.resource.capacity - BASIC_MEM_QUOTA;
                     /* 超容部分乘以使用时间 * 2 */
                     cost += allocation.usage_time * exceed * 2;
                 }
@@ -47,7 +46,7 @@ pub fn compute_cost(proc : &Process, total : &mut i32, penalty : &mut i32) {
                 /* 基本cost为20，如果使用时间超过3s，则超出每s统计 1.5 * 容量 */
                 cost += 20;
                 if allocation.usage_time > 3 {
-                    exceed = allocation.usage_time - 3;
+                    let exceed = allocation.usage_time - 3;
                     cost += exceed * allocation.resource.capacity * 3 / 2;
                 }
             }
