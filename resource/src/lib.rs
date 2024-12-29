@@ -20,41 +20,45 @@ pub struct Process {
 }
 
 const BASIC_MEM_QUOTA: i32 = 1024; /* 基础内存配额 */
+const BASIC_CPU_QUOTA: i32 = 2;    /* 基础CPU配额 */
+const BASIC_STORAGE_QUOTA: i32 = 3; /* 基础存储配额 */
+
+const CPU_EXCEED_FACTOR: i32 = 10; /* CPU 超出部分的计费因子 */
+const MEM_EXCEED_FACTOR: i32 = 2;  /* MEM 超出部分的计费因子 */
+const STORAGE_EXCEED_FACTOR: f32 = 1.5; /* STORAGE 超出部分的计费因子 */
+
+const STORAGE_PENALTY_THRESHOLD: i32 = 12; /* STORAGE 超出部分的计费因子 */
+const STORAGE_PENALTY: i32 = 1; /* STORAGE 超出部分的计费因子 */
 
 pub fn compute_cost(proc : &Process, total : &mut i32, penalty : &mut i32) {
     for allocation in proc.allocations.iter() {
         let mut cost = 0;
         match allocation.resource.resource_type {
             ResourceType::CPU => {
-                /* 基本cost为50，使用时间大于2s则额外统计 */
                 cost += 50;
-                if allocation.usage_time > 2 {
-                    let exceed = allocation.usage_time - 2;
-                    cost += exceed * 10;
+                if allocation.usage_time > BASIC_CPU_QUOTA {
+                    let exceed = allocation.usage_time - BASIC_CPU_QUOTA;
+                    cost += exceed * CPU_EXCEED_FACTOR;
                 }
             }
             ResourceType::Memory => {
-                /* 基本cost为30，如果容量超过 BASIC_MEM_QUOTA 则按超出部分和使用时间统计 */
                 cost += 30;
                 if allocation.resource.capacity > BASIC_MEM_QUOTA {
                     let exceed = allocation.resource.capacity - BASIC_MEM_QUOTA;
-                    /* 超容部分乘以使用时间 * 2 */
-                    cost += allocation.usage_time * exceed * 2;
+                    cost += allocation.usage_time * exceed * MEM_EXCEED_FACTOR;
                 }
             }
             ResourceType::Storage => {
-                /* 基本cost为20，如果使用时间超过3s，则超出每s统计 1.5 * 容量 */
                 cost += 20;
-                if allocation.usage_time > 3 {
-                    let exceed = allocation.usage_time - 3;
-                    cost += exceed * allocation.resource.capacity * 3 / 2;
+                if allocation.usage_time > BASIC_STORAGE_QUOTA {
+                    let exceed = allocation.usage_time - BASIC_STORAGE_QUOTA;
+                    cost += ((exceed * allocation.resource.capacity) as f32 * STORAGE_EXCEED_FACTOR) as i32;
                 }
             }
         }
 
-        /* 如果是 IO 资源且使用时间 > 12s，对 penalty 计数加1 */
-        if allocation.resource.resource_type == ResourceType::Storage && allocation.usage_time > 12 {
-            *penalty += 1;
+        if allocation.resource.resource_type == ResourceType::Storage && allocation.usage_time > STORAGE_PENALTY_THRESHOLD {
+            *penalty += STORAGE_PENALTY;
         }
 
         *total += cost;
