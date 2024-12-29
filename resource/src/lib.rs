@@ -1,10 +1,6 @@
-#[derive(PartialEq)]
-pub enum ResourceType {
-    CPU,
-    Memory,
-    Storage,
-}
+pub mod resource;
 
+use resource::{Resource, ResourceType};
 
 const BASIC_MEM_QUOTA: i32 = 1024; /* 基础内存配额 */
 const BASIC_CPU_QUOTA: i32 = 2;    /* 基础CPU配额 */
@@ -16,18 +12,6 @@ const STORAGE_EXCEED_FACTOR: f32 = 1.5; /* STORAGE 超出部分的计费因子 *
 
 const STORAGE_PENALTY_THRESHOLD: i32 = 12; /* STORAGE 超出部分的计费因子 */
 const STORAGE_PENALTY: i32 = 1; /* STORAGE 超出部分的计费因子 */
-
-pub struct Resource {
-    resource_type: ResourceType,
-    capacity: i32,
-}
-
-impl Resource {
-    #[cfg(test)]
-    fn new(resource_type: ResourceType, capacity: i32) -> Self {
-        Resource { resource_type, capacity }
-    }
-}
 
 pub struct Allocation {
     resource: Resource,
