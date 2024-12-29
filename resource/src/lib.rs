@@ -56,6 +56,13 @@ impl Allocation {
 
         cost
     }
+
+    fn compute_penalty(&self) -> i32 {
+        if self.resource.resource_type == ResourceType::Storage && self.usage_time > STORAGE_PENALTY_THRESHOLD {
+            return STORAGE_PENALTY;
+        }
+        0
+    }
 }
 
 pub struct Process {
@@ -64,10 +71,7 @@ pub struct Process {
 
 pub fn compute_cost(proc : &Process, total : &mut i32, penalty : &mut i32) {
     for allocation in &proc.allocations {
-        if allocation.resource.resource_type == ResourceType::Storage && allocation.usage_time > STORAGE_PENALTY_THRESHOLD {
-            *penalty += STORAGE_PENALTY;
-        }
-
+        *penalty += allocation.compute_penalty();
         *total += allocation.compute_cost();
     }
 }
