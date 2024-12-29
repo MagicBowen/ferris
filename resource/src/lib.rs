@@ -22,12 +22,24 @@ pub struct Resource {
     capacity: i32,
 }
 
+impl Resource {
+    #[cfg(test)]
+    fn new(resource_type: ResourceType, capacity: i32) -> Self {
+        Resource { resource_type, capacity }
+    }
+}
+
 pub struct Allocation {
     resource: Resource,
     usage_time: i32,
 }
 
 impl Allocation {
+    #[cfg(test)]
+    fn new(resource: Resource, usage_time: i32) -> Self {
+        Allocation { resource, usage_time }
+    }
+
     fn compute_cost(&self) -> i32 {
         let mut cost = 0;
         match self.resource.resource_type {
@@ -59,9 +71,10 @@ impl Allocation {
 
     fn compute_penalty(&self) -> i32 {
         if self.resource.resource_type == ResourceType::Storage && self.usage_time > STORAGE_PENALTY_THRESHOLD {
-            return STORAGE_PENALTY;
+            STORAGE_PENALTY
+        } else {
+            0
         }
-        0
     }
 }
 
@@ -69,10 +82,22 @@ pub struct Process {
     allocations: Vec<Allocation>,
 }
 
-pub fn compute_cost(proc : &Process, total : &mut i32, penalty : &mut i32) {
-    for allocation in &proc.allocations {
-        *penalty += allocation.compute_penalty();
-        *total += allocation.compute_cost();
+impl Process {
+    #[cfg(test)]
+    fn new() -> Self {
+        Process { allocations: vec![] }
+    }
+
+    #[cfg(test)]
+    fn add_allocation(&mut self, allocation: Allocation) {
+        self.allocations.push(allocation);
+    }
+
+    pub fn compute_cost(&self, total : &mut i32, penalty : &mut i32) {
+        for allocation in &self.allocations {
+            *penalty += allocation.compute_penalty();
+            *total += allocation.compute_cost();
+        }
     }
 }
 
@@ -82,19 +107,22 @@ mod tests {
 
     #[test]
     fn compute_cost_and_penalty_of_process() {
-        let r1 = Resource { resource_type: ResourceType::CPU, capacity: 4 };
-        let r2 = Resource { resource_type: ResourceType::Memory, capacity: 2048 };
-        let r3 = Resource { resource_type: ResourceType::Storage, capacity: 100 };
+        let r1 = Resource::new(ResourceType::CPU, 4);
+        let r2 = Resource::new(ResourceType::Memory, 2048);
+        let r3 = Resource::new(ResourceType::Storage, 100);
     
-        let a1 = Allocation { resource: r1, usage_time: 3 };  // CPU     使用3s
-        let a2 = Allocation { resource: r2, usage_time: 2 };  // Memory  使用2s
-        let a3 = Allocation { resource: r3, usage_time: 14 }; // Storage 使用14s
+        let a1 = Allocation::new(r1, 3);
+        let a2 = Allocation::new(r2, 2);
+        let a3 = Allocation::new(r3, 14);
     
-        let proc = Process { allocations: vec![a1, a2, a3] };
+        let mut proc : Process = Process::new();
+        proc.add_allocation(a1);
+        proc.add_allocation(a2);
+        proc.add_allocation(a3);
     
         let mut total = 0;
         let mut penalty = 0;
-        compute_cost(&proc, &mut total, &mut penalty);
+        proc.compute_cost(&mut total, &mut penalty);
     
         // 手动计算期望值:
         // CPU     : base 50 + (3-2)*10 = 50+10=60
