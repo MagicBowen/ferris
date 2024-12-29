@@ -17,7 +17,6 @@ pub struct Allocation {
 }
 
 impl Allocation {
-    #[cfg(test)]
     pub fn new(resource: Resource, usage_time: i32) -> Self {
         Allocation { resource, usage_time }
     }

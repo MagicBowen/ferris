@@ -11,7 +11,6 @@ pub struct Resource {
 }
 
 impl Resource {
-    #[cfg(test)]
     pub fn new(resource_type: ResourceType, capacity: i32) -> Self {
         Resource { resource_type, capacity }
     }
