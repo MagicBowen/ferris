@@ -1,2 +1,2 @@
 [workspace]
-members = ["resource"]
+members = [ "guidelines","resource"]
