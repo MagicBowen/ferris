@@ -5,19 +5,6 @@ pub enum ResourceType {
     Storage,
 }
 
-pub struct Resource {
-    resource_type: ResourceType,
-    capacity: i32,
-}
-
-pub struct Allocation {
-    resource: Resource,
-    usage_time: i32,
-}
-
-pub struct Process {
-    allocations: Vec<Allocation>,
-}
 
 const BASIC_MEM_QUOTA: i32 = 1024; /* 基础内存配额 */
 const BASIC_CPU_QUOTA: i32 = 2;    /* 基础CPU配额 */
@@ -30,38 +17,58 @@ const STORAGE_EXCEED_FACTOR: f32 = 1.5; /* STORAGE 超出部分的计费因子 *
 const STORAGE_PENALTY_THRESHOLD: i32 = 12; /* STORAGE 超出部分的计费因子 */
 const STORAGE_PENALTY: i32 = 1; /* STORAGE 超出部分的计费因子 */
 
-pub fn compute_cost(proc : &Process, total : &mut i32, penalty : &mut i32) {
-    for allocation in proc.allocations.iter() {
+pub struct Resource {
+    resource_type: ResourceType,
+    capacity: i32,
+}
+
+pub struct Allocation {
+    resource: Resource,
+    usage_time: i32,
+}
+
+impl Allocation {
+    fn compute_cost(&self) -> i32 {
         let mut cost = 0;
-        match allocation.resource.resource_type {
+        match self.resource.resource_type {
             ResourceType::CPU => {
                 cost += 50;
-                if allocation.usage_time > BASIC_CPU_QUOTA {
-                    let exceed = allocation.usage_time - BASIC_CPU_QUOTA;
+                if self.usage_time > BASIC_CPU_QUOTA {
+                    let exceed = self.usage_time - BASIC_CPU_QUOTA;
                     cost += exceed * CPU_EXCEED_FACTOR;
                 }
             }
             ResourceType::Memory => {
                 cost += 30;
-                if allocation.resource.capacity > BASIC_MEM_QUOTA {
-                    let exceed = allocation.resource.capacity - BASIC_MEM_QUOTA;
-                    cost += allocation.usage_time * exceed * MEM_EXCEED_FACTOR;
+                if self.resource.capacity > BASIC_MEM_QUOTA {
+                    let exceed = self.resource.capacity - BASIC_MEM_QUOTA;
+                    cost += self.usage_time * exceed * MEM_EXCEED_FACTOR;
                 }
             }
             ResourceType::Storage => {
                 cost += 20;
-                if allocation.usage_time > BASIC_STORAGE_QUOTA {
-                    let exceed = allocation.usage_time - BASIC_STORAGE_QUOTA;
-                    cost += ((exceed * allocation.resource.capacity) as f32 * STORAGE_EXCEED_FACTOR) as i32;
+                if self.usage_time > BASIC_STORAGE_QUOTA {
+                    let exceed = self.usage_time - BASIC_STORAGE_QUOTA;
+                    cost += ((exceed * self.resource.capacity) as f32 * STORAGE_EXCEED_FACTOR) as i32;
                 }
             }
         }
 
+        cost
+    }
+}
+
+pub struct Process {
+    allocations: Vec<Allocation>,
+}
+
+pub fn compute_cost(proc : &Process, total : &mut i32, penalty : &mut i32) {
+    for allocation in &proc.allocations {
         if allocation.resource.resource_type == ResourceType::Storage && allocation.usage_time > STORAGE_PENALTY_THRESHOLD {
             *penalty += STORAGE_PENALTY;
         }
 
-        *total += cost;
+        *total += allocation.compute_cost();
     }
 }
 
