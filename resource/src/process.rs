@@ -13,9 +13,9 @@ impl Process {
         self.allocations.push(allocation);
     }
 
-    pub fn compute_cost(&self, total : &mut i32) {
+    pub fn compute_cost(&self, cost : &mut i32) {
         for allocation in &self.allocations {
-            *total += allocation.compute_cost();
+            *cost += allocation.compute_cost();
         }
     }
 
