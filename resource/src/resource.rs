@@ -1,3 +1,5 @@
+use crate::resource_cost::{ResourceCost, CpuResource, MemoryResource, StorageResource};
+
 #[derive(PartialEq)]
 pub enum ResourceType {
     CPU,
@@ -6,61 +8,25 @@ pub enum ResourceType {
 }
 
 pub struct Resource {
-    resource_type: ResourceType,
-    capacity: i32,
+    resource_cost: Box<dyn ResourceCost>,
 }
 
-const BASIC_MEM_QUOTA: i32 = 1024; /* 基础内存配额 */
-const BASIC_CPU_QUOTA: i32 = 2;    /* 基础CPU配额 */
-const BASIC_STORAGE_QUOTA: i32 = 3; /* 基础存储配额 */
-
-const CPU_EXCEED_FACTOR: i32 = 10; /* CPU 超出部分的计费因子 */
-const MEM_EXCEED_FACTOR: i32 = 2;  /* MEM 超出部分的计费因子 */
-const STORAGE_EXCEED_FACTOR: f32 = 1.5; /* STORAGE 超出部分的计费因子 */
-
-const STORAGE_PENALTY_THRESHOLD: i32 = 12; /* STORAGE 超出部分的计费因子 */
-const STORAGE_PENALTY: i32 = 1; /* STORAGE 超出部分的计费因子 */ 
-
 impl Resource {
-
     pub fn new(resource_type: ResourceType, capacity: i32) -> Self {
-        Resource { resource_type, capacity }
+        let resource_cost :Box<dyn ResourceCost> = match resource_type {
+            ResourceType::CPU => Box::new(CpuResource{}),
+            ResourceType::Memory => Box::new(MemoryResource::new(capacity as u32)),
+            ResourceType::Storage => Box::new(StorageResource::new(capacity as u32)),
+        };
+
+        Resource {resource_cost,}
     }
 
     pub fn compute_cost(&self, usage_time : i32) -> i32 {
-        let mut cost = 0;
-        match self.resource_type {
-            ResourceType::CPU => {
-                cost += 50;
-                if usage_time > BASIC_CPU_QUOTA {
-                    let exceed = usage_time - BASIC_CPU_QUOTA;
-                    cost += exceed * CPU_EXCEED_FACTOR;
-                }
-            }
-            ResourceType::Memory => {
-                cost += 30;
-                if self.capacity > BASIC_MEM_QUOTA {
-                    let exceed = self.capacity - BASIC_MEM_QUOTA;
-                    cost += usage_time * exceed * MEM_EXCEED_FACTOR;
-                }
-            }
-            ResourceType::Storage => {
-                cost += 20;
-                if usage_time > BASIC_STORAGE_QUOTA {
-                    let exceed = usage_time - BASIC_STORAGE_QUOTA;
-                    cost += ((exceed * self.capacity) as f32 * STORAGE_EXCEED_FACTOR) as i32;
-                }
-            }
-        }
-
-        cost
+        self.resource_cost.cost(usage_time)
     }
 
     pub fn compute_penalty(&self, usage_time : i32) -> i32 {
-        if self.resource_type == ResourceType::Storage && usage_time > STORAGE_PENALTY_THRESHOLD {
-            STORAGE_PENALTY
-        } else {
-            0
-        }
+        self.resource_cost.penalty(usage_time)
     }
 }
