@@ -1,4 +1,11 @@
-use crate::resource_cost::{ResourceCost, CpuResource, MemoryResource, StorageResource};
+pub mod cpu;
+pub mod memory;
+pub mod storage;
+
+use crate::resource_cost::ResourceCost;
+use cpu::Cpu;
+use memory::Memory;
+use storage::Storage;
 
 #[derive(PartialEq)]
 pub enum ResourceType {
@@ -14,9 +21,9 @@ pub struct Resource {
 impl Resource {
     pub fn new(resource_type: ResourceType, capacity: i32) -> Self {
         let resource_cost :Box<dyn ResourceCost> = match resource_type {
-            ResourceType::CPU => Box::new(CpuResource{}),
-            ResourceType::Memory => Box::new(MemoryResource::new(capacity as u32)),
-            ResourceType::Storage => Box::new(StorageResource::new(capacity as u32)),
+            ResourceType::CPU => Box::new(Cpu{}),
+            ResourceType::Memory => Box::new(Memory::new(capacity as u32)),
+            ResourceType::Storage => Box::new(Storage::new(capacity as u32)),
         };
 
         Resource {resource_cost,}
