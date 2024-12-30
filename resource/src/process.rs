@@ -1,7 +1,7 @@
 use crate::allocation::Allocation;
 
 pub struct Process {
-    pub allocations: Vec<Allocation>,
+    allocations: Vec<Allocation>,
 }
 
 impl Process {
