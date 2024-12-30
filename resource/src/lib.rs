@@ -1,4 +1,4 @@
-pub mod resource_cost;
+mod resource_cost;
 pub mod resource;
 pub mod allocation;
 pub mod process;
