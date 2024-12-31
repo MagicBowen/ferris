@@ -1,13 +1,8 @@
 mod factory;
-use crate::resource_cost::ResourceCost;
-use factory::RES_FACTORY;
 
-#[derive(Debug, PartialEq, Eq, Hash)]
-pub enum ResourceType {
-    CPU,
-    Memory,
-    Storage,
-}
+use crate::resource_cost::ResourceCost;
+use factory::ResourceFactory;
+use std::sync::Mutex;
 
 pub struct Resource {
     resource_cost: Box<dyn ResourceCost>,
@@ -15,7 +10,7 @@ pub struct Resource {
 
 impl Resource {
     pub fn new(resource_type: ResourceType, capacity: i32) -> Self {
-        let resource_cost = RES_FACTORY.lock().unwrap().create(resource_type, capacity);
+        let resource_cost = RES_FACTORY.lock().unwrap().create(resource_type, capacity as u32);
         Resource {resource_cost,}
     }
 
@@ -38,14 +33,27 @@ mod memory;
 #[cfg(feature = "resource_storage")]
 mod storage;
 
-pub fn register() {
+
+#[derive(Debug, PartialEq, Eq, Hash)]
+pub enum ResourceType {
     #[cfg(feature = "resource_cpu")]
-    cpu::register_resource();
-
+    CPU,
     #[cfg(feature = "resource_memory")]
-    memory::register_resource();
-
+    Memory,
     #[cfg(feature = "resource_storage")]
-    storage::register_resource();
+    Storage,
+}
+
+lazy_static::lazy_static! {
+    pub static ref RES_FACTORY: Mutex<ResourceFactory> = Mutex::new({
+        let mut factory = ResourceFactory::new();
+        #[cfg(feature = "resource_cpu")]
+        factory.register(ResourceType::CPU, |_: u32| Box::new(cpu::Cpu));
+        #[cfg(feature = "resource_memory")]
+        factory.register(ResourceType::Memory, |capacity: u32| Box::new(memory::Memory::new(capacity)));
+        #[cfg(feature = "resource_storage")]
+        factory.register(ResourceType::Storage, |capacity: u32| Box::new(storage::Storage::new(capacity)));
+        factory
+    });
 }
 //////////////////////////////////////////////////////////////////

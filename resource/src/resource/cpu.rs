@@ -1,5 +1,4 @@
-use super::{ResourceCost, ResourceType};
-use crate::resource::factory::RES_FACTORY;
+use super::ResourceCost;
 
 pub struct Cpu;
 
@@ -17,8 +16,4 @@ impl ResourceCost for Cpu {
         }
         cost as i32
     }
-}
-
-pub fn register_resource() {
-    RES_FACTORY.lock().unwrap().register(ResourceType::CPU, |_capacity: i32| Box::new(Cpu));
 }

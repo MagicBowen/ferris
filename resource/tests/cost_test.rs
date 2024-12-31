@@ -6,8 +6,6 @@ use resource::compute_cost;
 #[test]
 #[cfg(feature = "platform_high")]
 fn compute_cost_and_penalty_of_process_in_high_platform() {
-    resource::resource::register();
-
     let r1 = Resource::new(ResourceType::CPU, 4);
     let r2 = Resource::new(ResourceType::Memory, 2048);
     let r3 = Resource::new(ResourceType::Storage, 100);
@@ -38,8 +36,6 @@ fn compute_cost_and_penalty_of_process_in_high_platform() {
 #[test]
 #[cfg(feature = "platform_low")]
 fn compute_cost_and_penalty_of_process_in_low_platform() {
-    resource::resource::register();
-
     let r1 = Resource::new(ResourceType::CPU, 4);
     let r2 = Resource::new(ResourceType::Memory, 2048);
 

@@ -1,6 +1,5 @@
+use super::ResourceCost;
 use std::ops::{Add, Sub};
-use super::{ResourceCost, ResourceType};
-use crate::resource::factory::RES_FACTORY;
 
 #[derive(PartialEq, PartialOrd, Clone, Copy)]
 struct GB(u32);
@@ -63,8 +62,4 @@ impl ResourceCost for Storage {
             0
         }
     }
-}
-
-pub fn register_resource() {
-    RES_FACTORY.lock().unwrap().register(ResourceType::Storage, |capacity: i32| Box::new(Storage::new(capacity as u32)));
 }
