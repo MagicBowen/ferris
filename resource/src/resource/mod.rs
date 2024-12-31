@@ -2,7 +2,7 @@ mod factory;
 
 use crate::resource_cost::ResourceCost;
 use factory::ResourceFactory;
-use std::sync::Mutex;
+use std::cell::RefCell;
 
 pub struct Resource {
     resource_cost: Box<dyn ResourceCost>,
@@ -10,7 +10,7 @@ pub struct Resource {
 
 impl Resource {
     pub fn new(resource_type: ResourceType, capacity: i32) -> Self {
-        let resource_cost = RES_FACTORY.lock().unwrap().create(resource_type, capacity as u32);
+        let resource_cost = RES_FACTORY.with(|f| f.borrow().create(resource_type, capacity as u32));
         Resource {resource_cost,}
     }
 
@@ -44,8 +44,8 @@ pub enum ResourceType {
     Storage,
 }
 
-lazy_static::lazy_static! {
-    pub static ref RES_FACTORY: Mutex<ResourceFactory> = Mutex::new({
+thread_local! {
+    static RES_FACTORY: RefCell<ResourceFactory> = RefCell::new({
         let mut factory = ResourceFactory::new();
         #[cfg(feature = "resource_cpu")]
         factory.register(ResourceType::CPU, |_: u32| Box::new(cpu::Cpu));
@@ -56,4 +56,3 @@ lazy_static::lazy_static! {
         factory
     });
 }
-//////////////////////////////////////////////////////////////////

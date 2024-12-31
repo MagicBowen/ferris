@@ -12,4 +12,3 @@ platform_low = ["resource_cpu", "resource_memory"]
 default = ["platform_low"]
 
 [dependencies]
-lazy_static = "1.5.0"
