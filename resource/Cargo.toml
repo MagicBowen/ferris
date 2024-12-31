@@ -3,5 +3,13 @@ name = "resource"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+resource_cpu = []
+resource_memory = []
+resource_storage = []
+platform_high = ["resource_cpu", "resource_memory", "resource_storage"]
+platform_low = ["resource_cpu", "resource_memory"]
+default = ["platform_low"]
+
 [dependencies]
 lazy_static = "1.5.0"

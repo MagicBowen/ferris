@@ -1,8 +1,4 @@
-mod cpu;
-mod memory;
-mod storage;
 mod factory;
-
 use crate::resource_cost::ResourceCost;
 use factory::RES_FACTORY;
 
@@ -32,8 +28,24 @@ impl Resource {
     }
 }
 
+//////////////////////////////////////////////////////////////////
+#[cfg(feature = "resource_cpu")]
+mod cpu;
+
+#[cfg(feature = "resource_memory")]
+mod memory;
+
+#[cfg(feature = "resource_storage")]
+mod storage;
+
 pub fn register() {
+    #[cfg(feature = "resource_cpu")]
     cpu::register_resource();
+
+    #[cfg(feature = "resource_memory")]
     memory::register_resource();
+
+    #[cfg(feature = "resource_storage")]
     storage::register_resource();
 }
+//////////////////////////////////////////////////////////////////
