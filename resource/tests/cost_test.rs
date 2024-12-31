@@ -5,6 +5,8 @@ use resource::compute_cost;
 
 #[test]
 fn compute_cost_and_penalty_of_process() {
+    resource::resource::register();
+
     let r1 = Resource::new(ResourceType::CPU, 4);
     let r2 = Resource::new(ResourceType::Memory, 2048);
     let r3 = Resource::new(ResourceType::Storage, 100);
