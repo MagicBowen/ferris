@@ -35,17 +35,16 @@ fn atom_rule(matcher: Matcher, action: Action) -> Rule {
 }
 
 fn all_of_rule(rules: Vec<Rule>) -> Rule {
-    Box::new(move |number| {
-        rules.iter().map(|rule| rule(number)).collect()
-    })
+    Box::new(move |number| rules.iter().map(|rule| rule(number)).collect())
 }
 
 fn any_of_rule(rules: Vec<Rule>) -> Rule {
     Box::new(move |number| {
-        rules.iter()
-             .map(|rule| rule(number))
-             .find(|result| !result.is_empty())
-             .unwrap_or_default()
+        rules
+            .iter()
+            .map(|rule| rule(number))
+            .find(|result| !result.is_empty())
+            .unwrap_or_default()
     })
 }
 

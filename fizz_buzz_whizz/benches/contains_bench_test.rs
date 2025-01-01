@@ -19,11 +19,15 @@ fn contains_digit_loop(number: u32, digit: u32) -> bool {
 }
 
 fn contains_digit_bench(c: &mut Criterion) {
-    c.bench_function("contains_digit", |b| b.iter(|| contains_digit(black_box(12345), black_box(5))));
+    c.bench_function("contains_digit", |b| {
+        b.iter(|| contains_digit(black_box(12345), black_box(5)))
+    });
 }
 
 fn contains_digit_loop_bench(c: &mut Criterion) {
-    c.bench_function("contains_digit", |b| b.iter(|| contains_digit_loop(black_box(12345), black_box(5))));
+    c.bench_function("contains_digit", |b| {
+        b.iter(|| contains_digit_loop(black_box(12345), black_box(5)))
+    });
 }
 
 criterion_group!(benches, contains_digit_bench, contains_digit_loop_bench);
