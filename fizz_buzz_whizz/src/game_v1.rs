@@ -1,6 +1,6 @@
 use std::string;
 
-trait Matcher {
+trait Matcher: Send + Sync {
     fn matches(&self, number: u32) -> bool;
 }
 
@@ -47,7 +47,7 @@ impl Matcher for AlwaysMatcher {
     }
 }
 
-trait Action {
+trait Action: Send + Sync {
     fn say(&self, number: u32) -> String;
 }
 
@@ -77,7 +77,7 @@ impl Action for NumberAction {
     }
 }
 
-trait Rule {
+trait Rule: Send + Sync {
     fn apply(&self, number: u32) -> String;
 }
 
@@ -103,7 +103,7 @@ impl<M: Matcher, A: Action> Rule for AtomRule<M, A> {
 }
 
 struct AllOfRules {
-    rules: Vec<Box<dyn Rule>>,
+    rules: Vec<Box<dyn Rule + Send + Sync>>,
 }
 
 impl Rule for AllOfRules {
@@ -116,7 +116,7 @@ impl Rule for AllOfRules {
 }
 
 struct AnyOfRules {
-    rules: Vec<Box<dyn Rule>>,
+    rules: Vec<Box<dyn Rule + Send + Sync>>,
 }
 
 impl Rule for AnyOfRules {
@@ -132,7 +132,7 @@ impl Rule for AnyOfRules {
 use super::Game;
 
 pub struct FizzBuzzWhizz {
-    rule: Box<dyn Rule>,
+    rule: Box<dyn Rule + Send + Sync>,
 }
 
 impl FizzBuzzWhizz {

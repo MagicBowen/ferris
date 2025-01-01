@@ -18,6 +18,7 @@ harness = false
 default = []
 game_v1 = []
 game_v2 = []
+parallel = ["rayon"]
 
 [dependencies]
-rayon = "1.10.0"
+rayon = { version = "1.10", optional = true }
