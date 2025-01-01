@@ -97,7 +97,7 @@ impl<M: Matcher, A: Action> Rule for AtomRule<M, A> {
         if self.matcher.matches(number) {
             self.action.say(number)
         } else {
-            String::new()
+            "".to_string()
         }
     }
 }
