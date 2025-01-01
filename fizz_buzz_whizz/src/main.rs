@@ -110,9 +110,7 @@ struct AllOfRules<'a> {
 
 impl<'a> Rule for AllOfRules<'a> {
     fn apply(&self, number: u32) -> String {
-        self.rules.iter().fold("".to_string(), |acc, r| {
-            acc + &r.apply(number)
-        })
+        self.rules.iter().map(|r| r.apply(number)).collect::<String>()
     }
 }
 
@@ -122,13 +120,10 @@ struct AnyOfRules<'a> {
 
 impl<'a> Rule for AnyOfRules<'a> {
     fn apply(&self, number: u32) -> String {
-        for r in &self.rules {
-            let result = r.apply(number);
-            if !result.is_empty() {
-                return result
-            }
-        }
-        String::new()
+        self.rules.iter()
+            .map(|rule| rule.apply(number))
+            .find(|result| !result.is_empty())
+            .unwrap_or_default()
     }
 }
 
@@ -137,7 +132,7 @@ fn main() {
     let buzz = AtomRule::new(DivMatcher::new(5), StringAction::new("buzz"));
     let whizz = AtomRule::new(DivMatcher::new(7), StringAction::new("whizz"));
 
-    let contains= AtomRule::new(ContainsMatcher::new(3), StringAction::new("whizz"));
+    let contains= AtomRule::new(ContainsMatcher::new(3), StringAction::new("fizz"));
     let default = AtomRule{matcher : AlwaysMatcher, action : NumberAction};
 
     let all_of = AllOfRules{rules : vec![&fizz, &buzz, &whizz]};
