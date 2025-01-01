@@ -1,4 +1,4 @@
-type Matcher = Box<dyn Fn(u32) -> bool>;
+type Matcher = Box<dyn Fn(u32) -> bool + Sync>;
 
 fn div_matcher(divisor: u32) -> Matcher {
     Box::new(move |number| number % divisor == 0)
@@ -12,7 +12,7 @@ fn always_matcher() -> Matcher {
     Box::new(|_number| true)
 }
 
-type Action = Box<dyn Fn(u32) -> String>;
+type Action = Box<dyn Fn(u32) -> String + Sync>;
 
 fn string_action(output: &'static str) -> Action {
     Box::new(move |_number| output.to_string())
@@ -22,7 +22,7 @@ fn number_action() -> Action {
     Box::new(|number| number.to_string())
 }
 
-type Rule = Box<dyn Fn(u32) -> String>;
+type Rule = Box<dyn Fn(u32) -> String + Sync>;
 
 fn atom_rule(matcher: Matcher, action: Action) -> Rule {
     Box::new(move |number| {

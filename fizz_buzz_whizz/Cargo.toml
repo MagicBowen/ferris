@@ -18,3 +18,6 @@ harness = false
 default = []
 game_v1 = []
 game_v2 = []
+
+[dependencies]
+rayon = "1.10.0"
