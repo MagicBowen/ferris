@@ -31,20 +31,22 @@ impl Sub for MB {
 }
 
 pub struct Memory {
-    mb_size : MB,
+    mb_size: MB,
 }
 
 impl Memory {
     pub fn new(mb_size: u32) -> Self {
-        Memory { mb_size : MB::new(mb_size) }
+        Memory {
+            mb_size: MB::new(mb_size),
+        }
     }
 
     const BASIC_MEM_QUOTA: MB = MB::new(1024); /* 基础内存配额 */
-    const MEM_EXCEED_FACTOR: u32 = 2;  /* MEM 超出部分的计费因子 */
+    const MEM_EXCEED_FACTOR: u32 = 2; /* MEM 超出部分的计费因子 */
 }
 
 impl ResourceCost for Memory {
-    fn cost(&self, usage_time : i32) -> i32 {
+    fn cost(&self, usage_time: i32) -> i32 {
         let mut cost = 30;
         if self.mb_size > Self::BASIC_MEM_QUOTA {
             let exceed = self.mb_size - Self::BASIC_MEM_QUOTA;

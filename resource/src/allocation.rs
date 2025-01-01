@@ -7,7 +7,10 @@ pub struct Allocation {
 
 impl Allocation {
     pub fn new(resource: Resource, usage_time: i32) -> Self {
-        Allocation { resource, usage_time }
+        Allocation {
+            resource,
+            usage_time,
+        }
     }
 
     pub fn compute_cost(&self) -> i32 {

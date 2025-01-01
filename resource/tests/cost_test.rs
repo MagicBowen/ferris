@@ -1,7 +1,7 @@
-use resource::resource::{Resource, ResourceType};
 use resource::allocation::Allocation;
-use resource::process::Process;
 use resource::compute_cost;
+use resource::process::Process;
+use resource::resource::{Resource, ResourceType};
 
 #[test]
 #[cfg(feature = "platform_high")]
@@ -14,7 +14,7 @@ fn compute_cost_and_penalty_of_process_in_high_platform() {
     let a2 = Allocation::new(r2, 2);
     let a3 = Allocation::new(r3, 14);
 
-    let mut proc : Process = Process::new();
+    let mut proc: Process = Process::new();
     proc.add_allocation(a1);
     proc.add_allocation(a2);
     proc.add_allocation(a3);
@@ -42,7 +42,7 @@ fn compute_cost_and_penalty_of_process_in_low_platform() {
     let a1 = Allocation::new(r1, 3);
     let a2 = Allocation::new(r2, 2);
 
-    let mut proc : Process = Process::new();
+    let mut proc: Process = Process::new();
     proc.add_allocation(a1);
     proc.add_allocation(a2);
 

@@ -10,7 +10,7 @@ struct DivMatcher {
 
 impl DivMatcher {
     fn new(divisor: u32) -> Self {
-        DivMatcher{divisor}
+        DivMatcher { divisor }
     }
 }
 
@@ -26,7 +26,7 @@ struct ContainsMatcher {
 
 impl ContainsMatcher {
     fn new(digit: u32) -> Self {
-        ContainsMatcher{digit}
+        ContainsMatcher { digit }
     }
 }
 
@@ -59,9 +59,11 @@ struct StringAction {
     output: String,
 }
 
-impl StringAction{
+impl StringAction {
     fn new(output: &str) -> Self {
-        StringAction{output: output.to_string()}
+        StringAction {
+            output: output.to_string(),
+        }
     }
 }
 
@@ -83,14 +85,14 @@ trait Rule {
     fn apply(&self, number: u32) -> String;
 }
 
-struct AtomRule<M : Matcher, A : Action> {
-    matcher : M,
-    action : A,
+struct AtomRule<M: Matcher, A: Action> {
+    matcher: M,
+    action: A,
 }
 
-impl<M: Matcher, A: Action>  AtomRule<M, A> {
+impl<M: Matcher, A: Action> AtomRule<M, A> {
     fn new(matcher: M, action: A) -> Self {
-        AtomRule{matcher, action}
+        AtomRule { matcher, action }
     }
 }
 
@@ -105,22 +107,26 @@ impl<M: Matcher, A: Action> Rule for AtomRule<M, A> {
 }
 
 struct AllOfRules<'a> {
-    rules : Vec<&'a dyn Rule>,
+    rules: Vec<&'a dyn Rule>,
 }
 
 impl<'a> Rule for AllOfRules<'a> {
     fn apply(&self, number: u32) -> String {
-        self.rules.iter().map(|r| r.apply(number)).collect::<String>()
+        self.rules
+            .iter()
+            .map(|r| r.apply(number))
+            .collect::<String>()
     }
 }
 
 struct AnyOfRules<'a> {
-    rules : Vec<&'a dyn Rule>,
+    rules: Vec<&'a dyn Rule>,
 }
 
 impl<'a> Rule for AnyOfRules<'a> {
     fn apply(&self, number: u32) -> String {
-        self.rules.iter()
+        self.rules
+            .iter()
             .map(|rule| rule.apply(number))
             .find(|result| !result.is_empty())
             .unwrap_or_default()
@@ -132,11 +138,18 @@ fn main() {
     let buzz = AtomRule::new(DivMatcher::new(5), StringAction::new("buzz"));
     let whizz = AtomRule::new(DivMatcher::new(7), StringAction::new("whizz"));
 
-    let contains= AtomRule::new(ContainsMatcher::new(3), StringAction::new("fizz"));
-    let default = AtomRule{matcher : AlwaysMatcher, action : NumberAction};
+    let contains = AtomRule::new(ContainsMatcher::new(3), StringAction::new("fizz"));
+    let default = AtomRule {
+        matcher: AlwaysMatcher,
+        action: NumberAction,
+    };
 
-    let all_of = AllOfRules{rules : vec![&fizz, &buzz, &whizz]};
-    let any_of = AnyOfRules{rules : vec![&contains, &all_of, &default]};
+    let all_of = AllOfRules {
+        rules: vec![&fizz, &buzz, &whizz],
+    };
+    let any_of = AnyOfRules {
+        rules: vec![&contains, &all_of, &default],
+    };
 
     let game = &any_of;
 

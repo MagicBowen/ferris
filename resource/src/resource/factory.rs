@@ -1,5 +1,5 @@
-use crate::resource_cost::ResourceCost;
 use super::ResourceType;
+use crate::resource_cost::ResourceCost;
 use std::collections::HashMap;
 
 type FactoryFn = fn(capacity: u32) -> Box<dyn ResourceCost>;
