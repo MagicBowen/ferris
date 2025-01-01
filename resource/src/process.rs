@@ -14,14 +14,10 @@ impl Process {
     }
 
     pub fn compute_cost(&self, cost : &mut i32) {
-        for allocation in &self.allocations {
-            *cost += allocation.compute_cost();
-        }
+        *cost += self.allocations.iter().map(|alloc| alloc.compute_cost()).sum::<i32>();
     }
 
     pub fn compute_penalty(&self, penalty : &mut i32) {
-        for allocation in &self.allocations {
-            *penalty += allocation.compute_penalty();
-        }
+        *penalty += self.allocations.iter().map(|alloc| alloc.compute_penalty()).sum::<i32>();
     }
 }
