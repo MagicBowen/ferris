@@ -32,14 +32,10 @@ impl ContainsMatcher {
 
 impl Matcher for ContainsMatcher {
     fn matches(&self, number: u32) -> bool {
-        let mut n = number;
-        while n > 0 {
-            if n % 10 == self.digit {
-                return true;
-            }
-            n /= 10;
-        }
-        false
+        number
+            .to_string()
+            .chars()
+            .any(|c| c.to_digit(10) == Some(self.digit))
     }
 }
 
@@ -136,7 +132,7 @@ impl Rule for AnyOfRules {
 use super::Game;
 
 pub struct FizzBuzzWhizz {
-    rule: Box<dyn Rule>,   
+    rule: Box<dyn Rule>,
 }
 
 impl FizzBuzzWhizz {
@@ -144,16 +140,20 @@ impl FizzBuzzWhizz {
         FizzBuzzWhizz {
             rule: Box::new(AnyOfRules {
                 rules: vec![
-                    Box::new(AtomRule::new(ContainsMatcher::new(3), StringAction::new("fizz"))), 
-                    Box::new(
-                        AllOfRules {
-                            rules: vec![
-                                Box::new(AtomRule::new(DivMatcher::new(3), StringAction::new("fizz"))),
-                                Box::new(AtomRule::new(DivMatcher::new(5), StringAction::new("buzz"))),
-                                Box::new(AtomRule::new(DivMatcher::new(7), StringAction::new("whizz"))),
-                            ],
-                        }
-                    ),
+                    Box::new(AtomRule::new(
+                        ContainsMatcher::new(3),
+                        StringAction::new("fizz"),
+                    )),
+                    Box::new(AllOfRules {
+                        rules: vec![
+                            Box::new(AtomRule::new(DivMatcher::new(3), StringAction::new("fizz"))),
+                            Box::new(AtomRule::new(DivMatcher::new(5), StringAction::new("buzz"))),
+                            Box::new(AtomRule::new(
+                                DivMatcher::new(7),
+                                StringAction::new("whizz"),
+                            )),
+                        ],
+                    }),
                     Box::new(AtomRule::new(AlwaysMatcher, NumberAction)),
                 ],
             }),
