@@ -1,8 +1,8 @@
 use super::ResourceType;
-use crate::resource_cost::ResourceCost;
+use super::cost_trait::CostTrait;
 use std::collections::HashMap;
 
-type FactoryFn = fn(capacity: u32) -> Box<dyn ResourceCost>;
+type FactoryFn = fn(capacity: u32) -> Box<dyn CostTrait>;
 pub struct ResourceFactory {
     registry: HashMap<ResourceType, FactoryFn>,
 }
@@ -18,7 +18,7 @@ impl ResourceFactory {
         self.registry.insert(resource_type, factory);
     }
 
-    pub fn create(&self, resource_type: ResourceType, capacity: u32) -> Box<dyn ResourceCost> {
+    pub fn create(&self, resource_type: ResourceType, capacity: u32) -> Box<dyn CostTrait> {
         if let Some(factory) = self.registry.get(&resource_type) {
             factory(capacity)
         } else {

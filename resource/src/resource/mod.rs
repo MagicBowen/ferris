@@ -1,9 +1,7 @@
+mod cost_trait;
 mod factory;
-
-use crate::resource_cost::ResourceCost;
-
 pub struct Resource {
-    resource_cost: Box<dyn ResourceCost>,
+    resource_cost: Box<dyn cost_trait::CostTrait>,
 }
 
 impl Resource {

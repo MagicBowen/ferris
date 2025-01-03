@@ -1,4 +1,4 @@
-use super::ResourceCost;
+use super::cost_trait::CostTrait;
 
 pub struct Cpu;
 
@@ -7,7 +7,7 @@ impl Cpu {
     const CPU_EXCEED_FACTOR: u32 = 10; /* CPU 超出部分的计费因子 */
 }
 
-impl ResourceCost for Cpu {
+impl CostTrait for Cpu {
     fn cost(&self, usage_time: i32) -> i32 {
         let mut cost = 50;
         if usage_time > Self::BASIC_CPU_QUOTA as i32 {
