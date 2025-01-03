@@ -1,0 +1,14 @@
+[package]
+name = "lac"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+default = []
+use_bindgen = ["bindgen"]
+
+[dependencies]
+
+[build-dependencies]
+cc = "1.0"
+bindgen = { version = "0.71.1", optional = true }
