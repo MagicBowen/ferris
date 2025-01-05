@@ -1,14 +1,20 @@
-fn main() {
-    println!("cargo:rerun-if-changed=tests/c_stubs/");
+use std::env;
 
-    cc::Build::new()
-        .cpp(true)
-        .flag("-std=c++17")
-        .flag("-fno-exceptions")
-        .flag("-fno-rtti")
-        .file("tests/c_stubs/device.cc")
-        .include("tests/c_stubs")
-        .compile("chip_sdk_stub");
+fn main() {
+    let use_sdk_stubs = env::var("CARGO_FEATURE_USE_SDK_STUBS").is_ok();
+
+    if use_sdk_stubs {
+        println!("cargo:rerun-if-changed=tests/c_stubs/");
+
+        cc::Build::new()
+            .cpp(true)
+            .flag("-std=c++17")
+            .flag("-fno-exceptions")
+            .flag("-fno-rtti")
+            .file("tests/c_stubs/device.cc")
+            .include("tests/c_stubs")
+            .compile("chip_sdk_stub");
+    }
 
     #[cfg(feature = "use_bindgen")]
     {

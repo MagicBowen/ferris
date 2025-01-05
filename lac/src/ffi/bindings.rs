@@ -1,6 +1,7 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 #![allow(non_upper_case_globals)]
+#![allow(unused)]
 
 use std::os::raw::{c_int, c_uchar};
 
@@ -9,7 +10,7 @@ pub const CHIP_SDK_PHY_PORT_PER_CHIP: usize = 8;
 pub const CHIP_SDK_PHY_PORT_PER_GROUP_MAX: usize = 4;
 
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum ChipSdkError {
     CHIP_SDK_SUCCESS = 0,
     CHIP_SDK_ERROR,
@@ -24,14 +25,15 @@ pub enum ChipSdkError {
 }
 
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Default, Debug, Copy, Clone, PartialEq, Eq)]
 pub enum LinkStatus {
+    #[default]
     LINK_DOWN = 0,
     LINK_UP = 1,
 }
 
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Default, Debug, Copy, Clone)]
 pub struct PhyPortTag {
     pub port_id: c_int,
     pub speed: c_int,
@@ -39,7 +41,7 @@ pub struct PhyPortTag {
 }
 
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Default, Debug, Copy, Clone)]
 pub struct SwitchChipTag {
     pub chip_id: c_int,
     pub numOfPorts: c_int,
@@ -47,12 +49,12 @@ pub struct SwitchChipTag {
 }
 
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Default, Debug, Copy, Clone)]
 pub struct MacTag {
     pub addr: [c_uchar; 6],
 }
 
-pub type LinkStatusCallback = Option<extern "C" fn(chip_id: c_int, port_id: c_int, status: LinkStatus)>;
+pub type LinkStatusCallback = extern "C" fn(chip_id: c_int, port_id: c_int, status: LinkStatus);
 
 extern "C" {
     pub fn chip_sdk_init(chips: *mut SwitchChipTag, chip_num: *mut c_int) -> ChipSdkError;

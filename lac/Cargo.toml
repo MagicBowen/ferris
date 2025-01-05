@@ -6,6 +6,7 @@ edition = "2021"
 [features]
 default = []
 use_bindgen = ["bindgen"]
+use_sdk_stubs = []
 
 [dependencies]
 
