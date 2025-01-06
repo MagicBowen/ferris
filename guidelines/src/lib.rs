@@ -1,16 +1,16 @@
 
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, mpsc};
 struct Task {
-    callback: Box<dyn FnOnce() + Send>,
+    cb: Box<dyn FnOnce() + Send>,
 }
 
 impl Task {
-    fn new(callback: Box<dyn FnOnce() + Send>) -> Task {
-        Task { callback }
+    fn new(cb: Box<dyn FnOnce() + Send>) -> Task {
+        Task { cb }
     }
 
-    fn execute(self) {
-        (self.callback)();
+    fn exec(self) {
+        (self.cb)();
     }
 }
 
@@ -20,13 +20,13 @@ struct Worker {
 }
 
 impl Worker {
-    fn new(id: u32, receiver: Arc<Mutex<std::sync::mpsc::Receiver<Task>>>) -> Worker {
+    fn new(id: u32, receiver: Arc<Mutex<mpsc::Receiver<Task>>>) -> Worker {
         let thread = std::thread::spawn(move || loop {
-            let task = receiver.lock().unwrap().recv();
-            match task {
-                Ok(task) => task.execute(),
+            let msg = receiver.lock().unwrap().recv();
+            match msg {
+                Ok(task) => task.exec(),
                 Err(_) => {
-                    println!("Worker {id} shutting down.");
+                    println!("Worker {id} is shutting down...");
                     break;
                 }
             }
@@ -36,19 +36,19 @@ impl Worker {
     }
 
     fn join(self) {
-        println!("worker {} join...", self.id);
+        println!("worker {} is joining...", self.id);
         self.thread.join().unwrap();
     }
 }
 
 pub struct ThreadPool {
     workers: Vec<Worker>,
-    sender: Option<std::sync::mpsc::Sender<Task>>,
+    sender: Option<mpsc::Sender<Task>>,
 }
 
 impl ThreadPool {
     pub fn new(size: usize) -> ThreadPool {
-        let (sender, receiver) = std::sync::mpsc::channel();
+        let (sender, receiver) = mpsc::channel();
         let receiver = Arc::new(Mutex::new(receiver));
         let mut workers = Vec::with_capacity(size);
 
@@ -59,12 +59,12 @@ impl ThreadPool {
         ThreadPool { workers, sender: Some(sender), }
     }
 
-    pub fn execute<F>(&self, f: F)
+    pub fn exec<F>(&self, f: F)
     where
         F: FnOnce() + Send + 'static,
     {
         let task = Task::new(Box::new(f));
-        self.sender.as_ref().unwrap().send(task).unwrap();
+        self.sender.as_ref().unwrap().send(task).expect("Send task failed");
     }
 }
 
@@ -82,16 +82,18 @@ impl Drop for ThreadPool {
 mod tests {
     use super::*;
 
+    const THREAD_NUM: usize = 4;
+    const TASK_NUM: usize = 10;
+
     #[test]
     fn test_thread_pool() {
-        let pool = ThreadPool::new(4);
+        let pool = ThreadPool::new(THREAD_NUM);
 
-        let statistics = Arc::new(Mutex::new(vec![String::new(); 10]));
+        let statistics = Arc::new(Mutex::new(vec![String::new(); TASK_NUM]));
 
-        for i in 0..10 {
+        for i in 0..TASK_NUM {
             let statistics = Arc::clone(&statistics);
-            pool.execute(move || {
-                println!("task {}", i);
+            pool.exec(move || {
                 let mut statistics = statistics.lock().unwrap();
                 statistics[i] = format!("task {}", i);
             });
@@ -100,9 +102,9 @@ mod tests {
         drop(pool);
 
         let statistics = statistics.lock().unwrap();
-        assert_eq!(statistics.len(), 10);
+        assert_eq!(statistics.len(), TASK_NUM);
 
-        for i in 0..10 {
+        for i in 0..TASK_NUM {
             assert_eq!(statistics[i], format!("task {}", i));
         }
     }
