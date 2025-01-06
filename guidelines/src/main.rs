@@ -1,10 +1,9 @@
-use std::cell::RefCell;
-use std::rc::Rc;
-
+use guidelines::ThreadPool;
 fn main() {
-    let value = Rc::new(RefCell::new(1));
-    let n = value.borrow();
-    println!("{}", *n);
-    drop(n);
-    drop(value);
+    let pool = ThreadPool::new(4);
+    for i in 0..10 {
+        pool.execute(move || {
+            println!("Task {}", i);
+        });
+    }
 }
