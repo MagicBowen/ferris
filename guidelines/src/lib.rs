@@ -61,7 +61,7 @@ impl ThreadPool {
 
     pub fn execute<F>(&self, f: F)
     where
-        F: Fn() + Send + 'static,
+        F: FnOnce() + Send + 'static,
     {
         let task = Task::new(Box::new(f));
         self.sender.as_ref().unwrap().send(task).unwrap();
@@ -86,10 +86,24 @@ mod tests {
     fn test_thread_pool() {
         let pool = ThreadPool::new(4);
 
+        let statistics = Arc::new(Mutex::new(vec![String::new(); 10]));
+
         for i in 0..10 {
+            let statistics = Arc::clone(&statistics);
             pool.execute(move || {
                 println!("task {}", i);
+                let mut statistics = statistics.lock().unwrap();
+                statistics[i] = format!("task {}", i);
             });
+        }
+
+        drop(pool);
+
+        let statistics = statistics.lock().unwrap();
+        assert_eq!(statistics.len(), 10);
+
+        for i in 0..10 {
+            assert_eq!(statistics[i], format!("task {}", i));
         }
     }
 }
