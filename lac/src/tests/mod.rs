@@ -1,10 +1,11 @@
 #[cfg(test)]
 mod unittests {
-    use crate::ffi;
+    use crate::ffi::*;
 
     #[test]
     fn test_init_sdk() {
-        let chips = ffi::init_sdk().unwrap();
+        let device = Device;
+        let chips = device.init().unwrap();
         assert_eq!(chips.len(), 0);
     }
 }

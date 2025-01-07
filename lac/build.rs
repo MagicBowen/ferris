@@ -12,6 +12,8 @@ fn main() {
             .flag("-fno-exceptions")
             .flag("-fno-rtti")
             .file("tests/c_stubs/device.cc")
+            .file("tests/c_stubs/chip_sdk.cc")
+            .file("tests/c_stubs/chip_cfg.cc")
             .include("tests/c_stubs")
             .compile("chip_sdk_stub");
     }

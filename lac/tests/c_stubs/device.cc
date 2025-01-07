@@ -23,6 +23,13 @@ ChipSdkError Device::GetChips(SwitchChip* chips, int* chip_num) const {
     return CHIP_SDK_SUCCESS;
 }
 
+const SwitchChip* Device::GetChip(int chip_id) const {
+    if (chip_id < 0 || (std::size_t)chip_id >= chips_.size()) {
+        return nullptr;
+    }
+    return &chips_[chip_id];
+}
+
 const PhyPort* Device::GetPhyPort(int chip_id, int port_id) const {
     if (chip_id < 0 || (std::size_t)chip_id >= chips_.size()) {
         return nullptr;
@@ -66,17 +73,4 @@ const Mac* Device::GetMac(int chip_id, int port_id) const {
     return &it->second;
 }
 
-}
-
-
-ChipSdkError chip_sdk_init(SwitchChip* chips, int* chip_num) {
-    return ChipSdkStubs::Device::GetInstance().GetChips(chips, chip_num);
-}
-
-ChipSdkError chip_sdk_register_link_status_callback(LinkStatusCallback callback) {
-    return ChipSdkStubs::Device::GetInstance().SetLinkStatusCallback(callback);
-}
-
-ChipSdkError chip_sdk_set_mac(int chip_id, int port_id, const Mac* mac) {
-    return ChipSdkStubs::Device::GetInstance().SetMac(chip_id, port_id, *mac);
 }

@@ -37,11 +37,16 @@ struct Device {
         return instance;
     }
 
-    ChipSdkError AddChip(const SwitchChip& chip);
     ChipSdkError GetChips(SwitchChip* chips, int* chip_num) const;
+
+    ChipSdkError AddChip(const SwitchChip& chip);
+    const SwitchChip* GetChip(int chip_id) const;
+
     const PhyPort* GetPhyPort(int chip_id, int port_id) const;
+
     ChipSdkError SetLinkStatusCallback(LinkStatusCallback callback);
     ChipSdkError SetLinkStatus(int chip_id, int port_id, LinkStatus status);
+    
     ChipSdkError SetMac(int chip_id, int port_id, const Mac& mac);
     const Mac* GetMac(int chip_id, int port_id) const;
 
