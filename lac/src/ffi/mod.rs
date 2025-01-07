@@ -11,29 +11,37 @@ mod bindings;
 pub use bindings::*;
 
 use std::fmt;
+use std::error::Error;
 
-#[derive(Debug)]
-pub struct SdkError(ChipSdkError);
+pub type SdkResult = Result<(), ChipSdkError>;
+pub const SDK_OK: SdkResult = Ok(());
 
-impl SdkError {
-    pub fn new(error: ChipSdkError) -> Self {
-        SdkError(error)
+impl fmt::Display for ChipSdkError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let description = match self {
+            ChipSdkError::CHIP_SDK_SUCCESS => "Success",
+            ChipSdkError::CHIP_SDK_ERROR => "General error",
+            ChipSdkError::CHIP_SDK_INVALID_PARAM => "Invalid parameter",
+            ChipSdkError::CHIP_SDK_NO_MEMORY => "No memory",
+            ChipSdkError::CHIP_SDK_NO_RESOURCE => "No resource",
+            ChipSdkError::CHIP_SDK_NOT_FOUND => "Not found",
+            ChipSdkError::CHIP_SDK_NOT_SUPPORTED => "Not supported",
+            ChipSdkError::CHIP_SDK_BUSY => "Busy",
+            ChipSdkError::CHIP_SDK_TIMEOUT => "Timeout",
+            ChipSdkError::CHIP_SDK_NO_CHANGE => "No change",
+        };
+        write!(f, "{}", description)
     }
 }
 
-impl fmt::Display for SdkError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "SdkError: code={:?}", self.0)
-    }
-}
+impl Error for ChipSdkError {}
 
-impl std::error::Error for SdkError {}
-
-impl From<ChipSdkError> for SdkError {
-    fn from(error: ChipSdkError) -> Self {
-        match error {
-            ChipSdkError::CHIP_SDK_SUCCESS => panic!("Invalid error code: {:?}", error),
-            _ => SdkError::new(error),
+impl ChipSdkError {
+    pub fn to_result(self) -> SdkResult {
+        if self == ChipSdkError::CHIP_SDK_SUCCESS {
+            SDK_OK
+        } else {
+            Err(self)
         }
     }
 }
@@ -45,35 +53,27 @@ pub type SwitchChip = SwitchChipTag;
 pub type PhyPort = PhyPortTag;
 pub type Mac = MacTag;
 
-pub struct Device;
+pub struct Device {
+    chips: [SwitchChip; CHIP_SDK_CHIP_MAX],
+    chip_num: i32,
+}
 
 impl Device {
-    pub fn init(&self) -> Result<Vec<SwitchChip>, SdkError> {
+    pub fn new() -> Self {
         let mut chips = [SwitchChip::default(); CHIP_SDK_CHIP_MAX];
         let mut chip_num = 0;
-        let ret = unsafe { chip_sdk_init(chips.as_mut_ptr(), &mut chip_num) };
-        if ret == ChipSdkError::CHIP_SDK_SUCCESS {
-            Ok(chips[..chip_num as usize].to_vec())
-        } else {
-            Err(ret.into())
+        let ret = unsafe { chip_sdk_init(chips.as_mut_ptr(), &mut chip_num)};
+        if ret != ChipSdkError::CHIP_SDK_SUCCESS {
+            panic!("Failed to initialize device: {}", ret);
         }
+        Device { chips, chip_num, }
     }
     
-    pub fn register_link_status_callback(&self, cb: LinkStatusCallback) -> Result<(), SdkError> {
-        let ret = unsafe { chip_sdk_register_link_status_callback(cb) };
-        if ret == ChipSdkError::CHIP_SDK_SUCCESS {
-            Ok(())
-        } else {
-            Err(ret.into())
-        }
+    pub fn register_link_status_callback(&self, cb: LinkStatusCallback) -> SdkResult {
+        unsafe { chip_sdk_register_link_status_callback(cb).to_result() }
     }
     
-    pub fn set_mac(&self, phy_port_id: &PhyPortId, mac: &Mac) -> Result<(), SdkError> {
-        let ret = unsafe { chip_sdk_set_mac(phy_port_id.0, phy_port_id.1, mac) };
-        if ret == ChipSdkError::CHIP_SDK_SUCCESS {
-            Ok(())
-        } else {
-            Err(ret.into())
-        }
+    pub fn set_mac(&self, phy_port_id: &PhyPortId, mac: &Mac) -> SdkResult {
+        unsafe { chip_sdk_set_mac(phy_port_id.0, phy_port_id.1, mac).to_result() }
     }
 }

@@ -1,12 +1,12 @@
 mod bindings;
 use bindings::*;
 
-pub trait ChipTest {
+pub trait ChipFixture {
     fn new(id: ChipId) -> Self;
-    fn add_port(&mut self, port: PhyPort) -> Result<(), SdkError>;
+    fn add_port(&mut self, port: PhyPort) -> SdkResult;
 }
 
-impl ChipTest for SwitchChip {
+impl ChipFixture for SwitchChip {
     fn new(id: ChipId) -> Self {
         SwitchChip {
             chip_id: id,
@@ -15,9 +15,9 @@ impl ChipTest for SwitchChip {
         }
     }
 
-    fn add_port(&mut self, port: PhyPort) -> Result<(), SdkError> {
+    fn add_port(&mut self, port: PhyPort) -> SdkResult {
         if self.numOfPorts as usize >= CHIP_SDK_PHY_PORT_PER_CHIP {
-            return Err(SdkError::new(ChipSdkError::CHIP_SDK_NO_RESOURCE));
+            return Err(ChipSdkError::CHIP_SDK_NO_RESOURCE);
         }
         self.ports[self.numOfPorts as usize] = port;
         self.numOfPorts += 1;
@@ -25,24 +25,27 @@ impl ChipTest for SwitchChip {
     }
 }
 
-pub trait DeviceTest {
-    fn add_chip(&self, chip: SwitchChip) -> Result<(), SdkError>;
-    fn get_chip(&self, chip_id: ChipId) -> Option<&SwitchChip>;
-    fn get_phy_port(&self, phy_port_id: &PhyPortId) -> Option<&PhyPort>;
-    fn set_link_status(&self, phy_port_id: &PhyPortId, status: LinkStatus) -> Result<(), SdkError>;
-    fn get_mac_addr(&self, phy_port_id: &PhyPortId) -> Option<&Mac>;
+pub struct DeviceFixture {
+    pub device: Option<Device>,
 }
 
-impl DeviceTest for Device {
-    fn add_chip(&self, chip: SwitchChip) -> Result<(), SdkError> {
-        let ret = unsafe { device_add_chip(&chip as *const SwitchChipTag) };
-        match ret {
-            ChipSdkError::CHIP_SDK_SUCCESS => Ok(()),
-            _ => Err(ret.into()),
+impl DeviceFixture {
+    pub fn new() -> Self {
+        DeviceFixture {
+            device: None,
         }
     }
 
-    fn get_chip(&self, chip_id: ChipId) -> Option<&SwitchChip> {
+    pub fn setup(&mut self) -> SdkResult {
+        self.device = Some(Device::new());
+        SDK_OK
+    }
+
+    pub fn add_chip(&self, chip: SwitchChip) -> SdkResult {
+        unsafe { device_add_chip(&chip as *const SwitchChipTag).to_result() }
+    }
+
+    pub fn get_chip(&self, chip_id: ChipId) -> Option<&SwitchChip> {
         let chip = unsafe { device_get_chip(chip_id) };
         if chip.is_null() {
             None
@@ -51,7 +54,7 @@ impl DeviceTest for Device {
         }
     }
 
-    fn get_phy_port(&self, phy_port_id: &PhyPortId) -> Option<&PhyPort> {
+    pub fn get_phy_port(&self, phy_port_id: &PhyPortId) -> Option<&PhyPort> {
         let port = unsafe { device_get_phy_port(phy_port_id.0, phy_port_id.1) };
         if port.is_null() {
             None
@@ -60,15 +63,11 @@ impl DeviceTest for Device {
         }
     }
 
-    fn set_link_status(&self, phy_port_id: &PhyPortId, status: LinkStatus) -> Result<(), SdkError> {
-        let ret = unsafe { device_set_link_status(phy_port_id.0, phy_port_id.1, status) };
-        match ret {
-            ChipSdkError::CHIP_SDK_SUCCESS => Ok(()),
-            _ => Err(ret.into()),
-        }
+    pub fn set_link_status(&self, phy_port_id: &PhyPortId, status: LinkStatus) -> SdkResult {
+        unsafe { device_set_link_status(phy_port_id.0, phy_port_id.1, status).to_result() }
     }
 
-    fn get_mac_addr(&self, phy_port_id: &PhyPortId) -> Option<&Mac> {
+    pub fn get_mac_addr(&self, phy_port_id: &PhyPortId) -> Option<&Mac> {
         let mac = unsafe { device_get_mac_addr(phy_port_id.0, phy_port_id.1) };
         if mac.is_null() {
             None
