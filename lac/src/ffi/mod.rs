@@ -12,22 +12,18 @@ pub use bindings::*;
 
 use std::fmt;
 
-
 #[derive(Debug)]
-pub struct SdkError {
-    code: i32,
-    message: String,
-}
+pub struct SdkError(ChipSdkError);
 
 impl SdkError {
-    pub fn new(code: i32, message: String) -> Self {
-        SdkError { code, message }
+    pub fn new(error: ChipSdkError) -> Self {
+        SdkError(error)
     }
 }
 
 impl fmt::Display for SdkError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "SdkError: code={}, message={}", self.code, self.message)
+        write!(f, "SdkError: code={:?}", self.0)
     }
 }
 
@@ -36,16 +32,8 @@ impl std::error::Error for SdkError {}
 impl From<ChipSdkError> for SdkError {
     fn from(error: ChipSdkError) -> Self {
         match error {
-            ChipSdkError::CHIP_SDK_ERROR => SdkError::new(1, "Error".to_string()),
-            ChipSdkError::CHIP_SDK_INVALID_PARAM => SdkError::new(2, "Invalid parameter".to_string()),
-            ChipSdkError::CHIP_SDK_NO_MEMORY => SdkError::new(3, "No memory".to_string()),
-            ChipSdkError::CHIP_SDK_NO_RESOURCE => SdkError::new(4, "No resource".to_string()),
-            ChipSdkError::CHIP_SDK_NOT_FOUND => SdkError::new(5, "Not found".to_string()),
-            ChipSdkError::CHIP_SDK_NOT_SUPPORTED => SdkError::new(6, "Not supported".to_string()),
-            ChipSdkError::CHIP_SDK_BUSY => SdkError::new(7, "Busy".to_string()),
-            ChipSdkError::CHIP_SDK_TIMEOUT => SdkError::new(8, "Timeout".to_string()),
-            ChipSdkError::CHIP_SDK_NO_CHANGE => SdkError::new(9, "No change".to_string()),
-            _ => SdkError::new(error as i32, "Unknown error".to_string()),
+            ChipSdkError::CHIP_SDK_SUCCESS => panic!("Invalid error code: {:?}", error),
+            _ => SdkError::new(error),
         }
     }
 }

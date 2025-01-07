@@ -17,7 +17,7 @@ impl ChipTest for SwitchChip {
 
     fn add_port(&mut self, port: PhyPort) -> Result<(), SdkError> {
         if self.numOfPorts as usize >= CHIP_SDK_PHY_PORT_PER_CHIP {
-            return Err(SdkError::new(1, "No more port can be added".to_string()));
+            return Err(SdkError::new(ChipSdkError::CHIP_SDK_NO_RESOURCE));
         }
         self.ports[self.numOfPorts as usize] = port;
         self.numOfPorts += 1;
