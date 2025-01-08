@@ -53,28 +53,14 @@ pub type SwitchChip = SwitchChipTag;
 pub type PhyPort = PhyPortTag;
 pub type Mac = MacTag;
 
-pub struct Device {
-    chips: [SwitchChip; CHIP_SDK_CHIP_MAX],
-    chip_num: i32,
+pub fn sdk_init(chips: &mut [SwitchChip], chip_num: &mut i32) -> SdkResult {
+    unsafe { chip_sdk_init(chips.as_mut_ptr(), chip_num as *mut i32).to_result() }
 }
 
-impl Device {
-    pub fn new() -> Self {
-        Device {
-            chips: [SwitchChip::default(); CHIP_SDK_CHIP_MAX],
-            chip_num: 0,
-        }
-    }
+pub fn sdk_register_link_status_callback(cb: LinkStatusCallback) -> SdkResult {
+    unsafe { chip_sdk_register_link_status_callback(cb).to_result() }
+}
 
-    pub fn activate(&mut self) -> SdkResult {
-        unsafe { chip_sdk_init(self.chips.as_mut_ptr(), &mut self.chip_num).to_result() }
-    }
-
-    pub fn register_link_status_callback(&self, cb: LinkStatusCallback) -> SdkResult {
-        unsafe { chip_sdk_register_link_status_callback(cb).to_result() }
-    }
-
-    pub fn set_mac(&self, phy_port_id: &PhyPortId, mac: &Mac) -> SdkResult {
-        unsafe { chip_sdk_set_mac(phy_port_id.0, phy_port_id.1, mac).to_result() }
-    }
+pub fn sdk_set_mac(phy_port_id: &PhyPortId, mac: &Mac) -> SdkResult {
+    unsafe { chip_sdk_set_mac(phy_port_id.0, phy_port_id.1, mac).to_result() }
 }

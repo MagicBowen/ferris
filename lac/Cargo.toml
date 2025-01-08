@@ -13,3 +13,6 @@ use_sdk_stubs = []
 [build-dependencies]
 cc = "1.0"
 bindgen = { version = "0.71.1", optional = true }
+
+[dev-dependencies]
+lac = { path = ".", features = ["use_sdk_stubs"] }

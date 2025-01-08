@@ -1,5 +1,4 @@
-
-use std::sync::{Arc, Mutex, mpsc};
+use std::sync::{mpsc, Arc, Mutex};
 struct Task {
     cb: Box<dyn FnOnce() + Send>,
 }
@@ -56,7 +55,10 @@ impl ThreadPool {
             workers.push(Worker::new(id as u32, Arc::clone(&receiver)));
         }
 
-        ThreadPool { workers, sender: Some(sender), }
+        ThreadPool {
+            workers,
+            sender: Some(sender),
+        }
     }
 
     pub fn exec<F>(&self, f: F)
@@ -64,7 +66,11 @@ impl ThreadPool {
         F: FnOnce() + Send + 'static,
     {
         let task = Task::new(Box::new(f));
-        self.sender.as_ref().unwrap().send(task).expect("Send task failed");
+        self.sender
+            .as_ref()
+            .unwrap()
+            .send(task)
+            .expect("Send task failed");
     }
 }
 

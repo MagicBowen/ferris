@@ -1,5 +1,5 @@
-use super::ResourceType;
 use super::cost_trait::CostTrait;
+use super::ResourceType;
 use std::collections::HashMap;
 
 type FactoryFn = fn(capacity: u32) -> Box<dyn CostTrait>;

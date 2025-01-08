@@ -1,6 +1,8 @@
 mod bindings;
 use bindings::*;
 
+pub use lac::lac::Device;
+
 pub trait ChipFixture {
     fn new(id: ChipId) -> Self;
     fn add_port(&mut self, port: PhyPort) -> SdkResult;
