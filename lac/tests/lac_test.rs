@@ -20,18 +20,13 @@ mod tests {
         let phy_port = fixture.get_phy_port(&PhyPortId(0, 0)).expect("Failed to get phy port");
         assert_eq!(phy_port.port_id, 0);
 
+        fixture.activate_device().expect("Failed to setup device");
+
         fixture.set_link_status(&PhyPortId(0, 0), LinkStatus::LINK_UP).expect("Failed to set link status");
         assert_eq!(phy_port.status, LinkStatus::LINK_UP);
-        
-        fixture.setup().expect("Failed to setup device");
         
         fixture.device.as_ref().unwrap().set_mac(&PhyPortId(0, 0), &Mac{addr: [0; 6]}).expect("Failed to set mac address");
         let mac = fixture.get_mac_addr(&PhyPortId(0, 0)).expect("Failed to get mac address");
         assert_eq!(mac.addr, [0; 6]);
     }
 }
-
-
-
-
-

@@ -25,6 +25,16 @@ impl ChipFixture for SwitchChip {
     }
 }
 
+macro_rules! ptr_to_option {
+    ($ptr:expr) => {
+        if $ptr.is_null() {
+            None
+        } else {
+            Some(unsafe { &*($ptr) })
+        }
+    };
+}
+
 pub struct DeviceFixture {
     pub device: Option<Device>,
 }
@@ -36,43 +46,35 @@ impl DeviceFixture {
         }
     }
 
-    pub fn setup(&mut self) -> SdkResult {
+    pub fn activate_device(&mut self) -> SdkResult {
+        assert!(self.device.is_none(), "Device should be activated only once");
         self.device = Some(Device::new());
         SDK_OK
     }
 
     pub fn add_chip(&self, chip: SwitchChip) -> SdkResult {
+        assert!(self.device.is_none(), "Chip should be added before device activation");
         unsafe { device_add_chip(&chip as *const SwitchChipTag).to_result() }
     }
 
-    pub fn get_chip(&self, chip_id: ChipId) -> Option<&SwitchChip> {
+    pub fn get_chip(&self, chip_id: ChipId) -> Option<&'static SwitchChip> {
         let chip = unsafe { device_get_chip(chip_id) };
-        if chip.is_null() {
-            None
-        } else {
-            Some(unsafe { &*chip })
-        }
+        ptr_to_option!(chip)
     }
 
-    pub fn get_phy_port(&self, phy_port_id: &PhyPortId) -> Option<&PhyPort> {
-        let port = unsafe { device_get_phy_port(phy_port_id.0, phy_port_id.1) };
-        if port.is_null() {
-            None
-        } else {
-            Some(unsafe { &*port })
-        }
+    pub fn get_phy_port(&self, phy_port_id: &PhyPortId) -> Option<&'static PhyPort> {
+        let phy_port = unsafe { device_get_phy_port(phy_port_id.0, phy_port_id.1) };
+        ptr_to_option!(phy_port)
     }
 
     pub fn set_link_status(&self, phy_port_id: &PhyPortId, status: LinkStatus) -> SdkResult {
+        assert!(self.device.is_some(), "Link status should be set after device activation");
         unsafe { device_set_link_status(phy_port_id.0, phy_port_id.1, status).to_result() }
     }
 
     pub fn get_mac_addr(&self, phy_port_id: &PhyPortId) -> Option<&Mac> {
+        assert!(self.device.is_some(), "Mac address should be set after device activation");
         let mac = unsafe { device_get_mac_addr(phy_port_id.0, phy_port_id.1) };
-        if mac.is_null() {
-            None
-        } else {
-            Some(unsafe { &*mac })
-        }
+        ptr_to_option!(mac)
     }
 }
