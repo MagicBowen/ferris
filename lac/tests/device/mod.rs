@@ -36,24 +36,26 @@ macro_rules! ptr_to_option {
 }
 
 pub struct DeviceFixture {
-    pub device: Option<Device>,
+    pub activated: bool,
 }
 
 impl DeviceFixture {
     pub fn new() -> Self {
-        DeviceFixture {
-            device: None,
-        }
+        DeviceFixture { activated: false }
     }
 
-    pub fn activate_device(&mut self) -> SdkResult {
-        assert!(self.device.is_none(), "Device should be activated only once");
-        self.device = Some(Device::new());
+    pub fn activate(&mut self, device: &mut Device) -> SdkResult {
+        assert!(!self.activated, "Device should be activated only once");
+        device.activate().expect("Failed to activate device");
+        self.activated = true;
         SDK_OK
     }
 
     pub fn add_chip(&self, chip: SwitchChip) -> SdkResult {
-        assert!(self.device.is_none(), "Chip should be added before device activation");
+        assert!(
+            !self.activated,
+            "Chip should be added before device activation"
+        );
         unsafe { device_add_chip(&chip as *const SwitchChipTag).to_result() }
     }
 
@@ -68,12 +70,18 @@ impl DeviceFixture {
     }
 
     pub fn set_link_status(&self, phy_port_id: &PhyPortId, status: LinkStatus) -> SdkResult {
-        assert!(self.device.is_some(), "Link status should be set after device activation");
+        assert!(
+            self.activated,
+            "Link status should be set after device activation"
+        );
         unsafe { device_set_link_status(phy_port_id.0, phy_port_id.1, status).to_result() }
     }
 
     pub fn get_mac_addr(&self, phy_port_id: &PhyPortId) -> Option<&Mac> {
-        assert!(self.device.is_some(), "Mac address should be set after device activation");
+        assert!(
+            self.activated,
+            "Mac address should be set after device activation"
+        );
         let mac = unsafe { device_get_mac_addr(phy_port_id.0, phy_port_id.1) };
         ptr_to_option!(mac)
     }

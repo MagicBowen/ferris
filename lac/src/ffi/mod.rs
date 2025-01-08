@@ -10,8 +10,8 @@ mod bindings;
 #[cfg(not(feature = "use_bindgen"))]
 pub use bindings::*;
 
-use std::fmt;
 use std::error::Error;
+use std::fmt;
 
 pub type SdkResult = Result<(), ChipSdkError>;
 pub const SDK_OK: SdkResult = Ok(());
@@ -60,19 +60,20 @@ pub struct Device {
 
 impl Device {
     pub fn new() -> Self {
-        let mut chips = [SwitchChip::default(); CHIP_SDK_CHIP_MAX];
-        let mut chip_num = 0;
-        let ret = unsafe { chip_sdk_init(chips.as_mut_ptr(), &mut chip_num)};
-        if ret != ChipSdkError::CHIP_SDK_SUCCESS {
-            panic!("Failed to initialize device: {}", ret);
+        Device {
+            chips: [SwitchChip::default(); CHIP_SDK_CHIP_MAX],
+            chip_num: 0,
         }
-        Device { chips, chip_num, }
     }
-    
+
+    pub fn activate(&mut self) -> SdkResult {
+        unsafe { chip_sdk_init(self.chips.as_mut_ptr(), &mut self.chip_num).to_result() }
+    }
+
     pub fn register_link_status_callback(&self, cb: LinkStatusCallback) -> SdkResult {
         unsafe { chip_sdk_register_link_status_callback(cb).to_result() }
     }
-    
+
     pub fn set_mac(&self, phy_port_id: &PhyPortId, mac: &Mac) -> SdkResult {
         unsafe { chip_sdk_set_mac(phy_port_id.0, phy_port_id.1, mac).to_result() }
     }
