@@ -1,13 +1,6 @@
 #![allow(unused)]
 
-#[cfg(feature = "use_bindgen")]
-mod bindings_gen;
-#[cfg(feature = "use_bindgen")]
-pub use bindings_gen::*;
-
-#[cfg(not(feature = "use_bindgen"))]
 mod bindings;
-#[cfg(not(feature = "use_bindgen"))]
 pub use bindings::*;
 
 use std::error::Error;
