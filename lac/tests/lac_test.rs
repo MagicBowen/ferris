@@ -18,15 +18,15 @@ mod tests {
         let chip = fixture.get_chip(0).expect("Failed to get chip");
         assert_eq!(chip.chip_id, 0);
 
-        let phy_port = fixture
-            .get_phy_port(&PhyPortId(0, 0))
-            .expect("Failed to get phy port");
-        assert_eq!(phy_port.port_id, 0);
-
         let mut device = Device::new();
         fixture
             .activate(&mut device)
             .expect("Failed to setup device");
+
+        let phy_port = fixture
+            .get_phy_port(&PhyPortId(0, 0))
+            .expect("Failed to get phy port");
+        assert_eq!(phy_port.port_id, 0);
 
         fixture
             .set_link_status(&PhyPortId(0, 0), LinkStatus::LINK_UP)

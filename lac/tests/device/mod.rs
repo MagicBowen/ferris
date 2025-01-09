@@ -61,12 +61,12 @@ impl DeviceFixture {
         unsafe { device_add_chip(&chip as *const SwitchChipTag).to_result() }
     }
 
-    pub fn get_chip(&self, chip_id: ChipId) -> Option<&'static SwitchChip> {
+    pub fn get_chip(&self, chip_id: ChipId) -> Option<&SwitchChip> {
         let chip = unsafe { device_get_chip(chip_id) };
         ptr_to_option!(chip)
     }
 
-    pub fn get_phy_port(&self, phy_port_id: &PhyPortId) -> Option<&'static PhyPort> {
+    pub fn get_phy_port(&self, phy_port_id: &PhyPortId) -> Option<&PhyPort> {
         let phy_port = unsafe { device_get_phy_port(phy_port_id.0, phy_port_id.1) };
         ptr_to_option!(phy_port)
     }
