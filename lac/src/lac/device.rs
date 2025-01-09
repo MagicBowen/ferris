@@ -25,3 +25,9 @@ impl Device {
         sdk_set_mac(phy_port_id, mac)
     }
 }
+
+impl Default for Device {
+    fn default() -> Self {
+        Self::new()
+    }
+}
