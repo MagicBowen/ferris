@@ -246,6 +246,7 @@ name = "guidelines"
 version = "0.1.0"
 dependencies = [
  "lazy_static",
+ "once_cell",
 ]
 
 [[package]]

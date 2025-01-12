@@ -1,3 +1,5 @@
+## Send/Sync 特征
+
 以下是 Rust 中常见类型对 `Send` 和 `Sync` 特征的支持情况：
 
 | 类型           | `Send` 支持情况                                                                                   | `Sync` 支持情况                                                                                   | 备注                                                                                   |
