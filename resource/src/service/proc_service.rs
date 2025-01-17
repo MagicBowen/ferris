@@ -1,26 +1,21 @@
 use crate::domain::resource::ResourceType;
 use crate::domain::allocation::AllocationFactory;
 use crate::domain::process::{Pid, Process};
-use std::collections::HashMap;
+use super::proc_repo::ProcRepo;
 
 pub struct ProcService {
-    proc_repo: HashMap<Pid, Box<Process>>,
+    proc_repo: ProcRepo,
 }
 
 impl ProcService {
     pub fn new() -> Self {
         ProcService {
-            proc_repo: HashMap::new(),
+            proc_repo: ProcRepo::new(),
         }
     }
 
     pub fn add_process(&mut self, pid: Pid) -> Result<(), String> {
-        if self.proc_repo.contains_key(&pid) {
-            return Err(format!("Process with pid {} already exists", pid));
-        }
-        let proc = Box::new(Process::new());
-        self.proc_repo.insert(pid, proc);
-        Ok(())
+        self.proc_repo.add_proc(&pid, Process::new())
     }
 
     pub fn add_allocation(
@@ -30,7 +25,7 @@ impl ProcService {
         res: ResourceType,
         capacity: i32,
     ) -> Result<(), String> {
-        if let Some(proc) = self.proc_repo.get_mut(&pid) {
+        if let Some(proc) = self.proc_repo.get_proc_mut(&pid) {
             proc.add_allocation(AllocationFactory::create(res, capacity, time));
             return Ok(());
         }
@@ -38,7 +33,7 @@ impl ProcService {
     }
 
     pub fn compute_process(&self, pid: Pid) -> Option<(i32, i32)> {
-        if let Some(proc) = self.proc_repo.get(&pid) {
+        if let Some(proc) = self.proc_repo.get_proc(&pid) {
             return Some((proc.compute_cost(), proc.compute_penalty()));
         }
         None
