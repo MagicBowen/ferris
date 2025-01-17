@@ -26,11 +26,8 @@ pub fn config_allocation(
     })
 }
 
-pub fn compute_process(pid: u32, cost: &mut i32, penalty: &mut i32) -> Result<(), String> {
+pub fn compute_process(pid: u32) -> Option<(i32, i32)> {
     PROC_SERVICE.with(|proc_service| {
-        proc_service.borrow_mut().compute_process(pid).map(|(c, p)| {
-            *cost += c;
-            *penalty += p;
-        })
+        proc_service.borrow_mut().compute_process(pid)
     })
 }
