@@ -41,8 +41,8 @@ impl Memory {
         }
     }
 
-    const BASIC_MEM_QUOTA: MB = MB::new(1024); /* 基础内存配额 */
-    const MEM_EXCEED_FACTOR: u32 = 2; /* MEM 超出部分的计费因子 */
+    const BASIC_MEM_QUOTA: MB = MB::new(1024);
+    const MEM_EXCEED_FACTOR: u32 = 2;
 }
 
 impl CostTrait for Memory {

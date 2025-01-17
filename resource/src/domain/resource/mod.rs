@@ -11,11 +11,11 @@ impl Resource {
         Resource { resource_cost }
     }
 
-    pub fn compute_cost(&self, usage_time: i32) -> i32 {
+    pub(crate) fn compute_cost(&self, usage_time: i32) -> i32 {
         self.resource_cost.cost(usage_time)
     }
 
-    pub fn compute_penalty(&self, usage_time: i32) -> i32 {
+    pub(crate) fn compute_penalty(&self, usage_time: i32) -> i32 {
         self.resource_cost.penalty(usage_time)
     }
 }

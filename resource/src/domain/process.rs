@@ -1,4 +1,6 @@
-use crate::allocation::Allocation;
+use crate::domain::allocation::Allocation;
+
+pub type Pid = u32;
 
 pub struct Process {
     allocations: Vec<Allocation>,
@@ -15,19 +17,17 @@ impl Process {
         self.allocations.push(allocation);
     }
 
-    pub fn compute_cost(&self, cost: &mut i32) {
-        *cost += self
-            .allocations
+    pub fn compute_cost(&self) -> i32 {
+        self.allocations
             .iter()
             .map(|alloc| alloc.compute_cost())
-            .sum::<i32>();
+            .sum::<i32>()
     }
 
-    pub fn compute_penalty(&self, penalty: &mut i32) {
-        *penalty += self
-            .allocations
+    pub fn compute_penalty(&self) -> i32 {
+        self.allocations
             .iter()
             .map(|alloc| alloc.compute_penalty())
-            .sum::<i32>();
+            .sum::<i32>()
     }
 }

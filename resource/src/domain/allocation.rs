@@ -1,4 +1,4 @@
-use crate::resource::Resource;
+use crate::domain::resource::Resource;
 
 pub struct Allocation {
     resource: Resource,
@@ -13,11 +13,11 @@ impl Allocation {
         }
     }
 
-    pub fn compute_cost(&self) -> i32 {
+    pub(crate) fn compute_cost(&self) -> i32 {
         self.resource.compute_cost(self.usage_time)
     }
 
-    pub fn compute_penalty(&self) -> i32 {
+    pub(crate) fn compute_penalty(&self) -> i32 {
         self.resource.compute_penalty(self.usage_time)
     }
 }

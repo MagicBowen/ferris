@@ -15,10 +15,10 @@
 ### 惯用实现
 
 - Event：一般是纯数据类，作为 Service 的参数和返回值，入参一般是不可变的，内存由外部管理；
-- Service：一般是无状态的，接收 Event，从 Repo 中查找并调用 Aggregate 的方法，返回 Event；Service 一般是无状态的，可以并发调用；
+- Service：一般是无状态的，接收 Event，从 Repository 中查找并调用 Aggregate 的方法并调用完成实际的业务逻辑；Service 一般是无状态的，可以并发调用；
 - Repository：一般是容器类，存储和查询 Aggregate，供 Service 使用；每种 Aggregate 一个 Repository；Repository一般是单例，并发访问需要加锁；Service 根据业务需要调用合适的 Repository； Repository 的接口有的是只读，例如统计类的查询；有的是读写，例如增加、删除等；
 - Factory：一般是创建 Aggregate 的方法，复杂的创建逻辑；Factory 一般是无状态的，大多是静态类和方法，可以并发调用；
-- Aggregate：一般是有状态的，有一致性约束，内部有 Entity 和 Value Object；Aggregate 一般是有状态的，不可并发访问，需要加锁；有生命周期，由对应的 Factory 创建，保存在对应的 Repository 中；
+- Aggregate：一般是某一个 Entity 类作为聚合根承担该角色；Aggregate复杂内部 Entity 之间的一致性；由于 Aggregate 一般按照一致性边界划分，因此不可并发访问，需要加锁；Aggregate 有对应的 Factory 封装其创建过程，并保存在其对应的 Repository 中（如果不需要持久化，就是一个基于内存的容器封装类型）；
 - Entity：一般是有状态的，有 ID，有生命周期；Entity 一般是有状态的，不可并发访问（同步控制由上层的 Aggregate 控制）；有生命周期，由对应的 Aggregate 创建并聚合；Entity需要实现正确的 `eq` 和 `hash` 方法（借助 ID）；
 - Value Object：一般是无状态的，不可变的；可以被多个 Entity 引用； 也可以直接被 Entity 组合；Value Object 需要实现正确的 `eq` 和 `hash` 方法（全属性）；
 

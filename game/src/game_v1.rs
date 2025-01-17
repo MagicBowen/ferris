@@ -129,8 +129,6 @@ impl Rule for AnyOfRules {
     }
 }
 
-use super::Game;
-
 pub struct FizzBuzzWhizz {
     rule: Box<dyn Rule + Send + Sync>,
 }
@@ -160,6 +158,8 @@ impl FizzBuzzWhizz {
         }
     }
 }
+
+use super::Game;
 
 impl Game for FizzBuzzWhizz {
     fn apply(&self, number: u32) -> String {

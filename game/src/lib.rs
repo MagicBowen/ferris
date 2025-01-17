@@ -8,6 +8,9 @@ mod game_v1;
 #[cfg(feature = "game_v2")]
 mod game_v2;
 
+#[cfg(feature = "game_v3")]
+mod game_v3;
+
 #[cfg(feature = "parallel")]
 use rayon::prelude::*;
 
@@ -16,6 +19,8 @@ pub fn play_result(max: u32) -> Vec<String> {
     let game = game_v1::FizzBuzzWhizz::new();
     #[cfg(feature = "game_v2")]
     let game = game_v2::FizzBuzzWhizz::new();
+    #[cfg(feature = "game_v3")]
+    let game = game_v3::FizzBuzzWhizz::new();
 
     #[cfg(not(feature = "parallel"))]
     let result = (1..max).map(|i| game.apply(i)).collect();

@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::sync::{Arc, RwLock, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 use uuid::Uuid;
 
 // ----------- Value Objects -----------
@@ -82,7 +82,12 @@ impl Customer {
         self.place_order_with_id(Uuid::new_v4(), amount, description)
     }
 
-    fn place_order_with_id(&mut self, order_id: Uuid, amount: Money, description: &str) -> Result<Order, String> {
+    fn place_order_with_id(
+        &mut self,
+        order_id: Uuid,
+        amount: Money,
+        description: &str,
+    ) -> Result<Order, String> {
         if self.balance.amount < amount.amount {
             return Err("Insufficient balance to place order".to_string());
         }
@@ -146,9 +151,14 @@ impl Repository for InMemoryRepository {
     }
 
     fn save(&self, customer: Arc<Mutex<Customer>>) -> Result<(), String> {
-        let mut store = self.store.write().map_err(|_| "Failed to acquire write lock".to_string())?;
+        let mut store = self
+            .store
+            .write()
+            .map_err(|_| "Failed to acquire write lock".to_string())?;
         let id = {
-            let customer_lock = customer.lock().map_err(|_| "Failed to lock customer".to_string())?;
+            let customer_lock = customer
+                .lock()
+                .map_err(|_| "Failed to lock customer".to_string())?;
             customer_lock.id
         };
         store.insert(id, customer);
@@ -158,13 +168,23 @@ impl Repository for InMemoryRepository {
 
 // ----------- Factory -----------
 trait Factory {
-    fn create_customer(&self, id: Uuid, name: &str, initial_balance: Money) -> Result<Customer, String>;
+    fn create_customer(
+        &self,
+        id: Uuid,
+        name: &str,
+        initial_balance: Money,
+    ) -> Result<Customer, String>;
 }
 
 struct CustomerFactoryImpl;
 
 impl Factory for CustomerFactoryImpl {
-    fn create_customer(&self, id: Uuid, name: &str, initial_balance: Money) -> Result<Customer, String> {
+    fn create_customer(
+        &self,
+        id: Uuid,
+        name: &str,
+        initial_balance: Money,
+    ) -> Result<Customer, String> {
         Ok(Customer::new(id, name, initial_balance))
     }
 }
@@ -196,14 +216,8 @@ enum OrderEvent {
 
 #[derive(Debug, Clone)]
 enum BalanceEvent {
-    BalanceDeposited {
-        customer_id: Uuid,
-        amount: Money,
-    },
-    BalanceWithdrawn {
-        customer_id: Uuid,
-        amount: Money,
-    },
+    BalanceDeposited { customer_id: Uuid, amount: Money },
+    BalanceWithdrawn { customer_id: Uuid, amount: Money },
 }
 
 // ----------- Services -----------
@@ -213,18 +227,28 @@ struct CustomerService {
 }
 
 impl CustomerService {
-    fn new(repository: Arc<dyn Repository + Send + Sync>, factory: Arc<dyn Factory + Send + Sync>) -> Self {
-        CustomerService { repository, factory }
+    fn new(
+        repository: Arc<dyn Repository + Send + Sync>,
+        factory: Arc<dyn Factory + Send + Sync>,
+    ) -> Self {
+        CustomerService {
+            repository,
+            factory,
+        }
     }
 
     // 处理与客户相关的事件
     fn handle_event(&self, event: CustomerEvent) -> Result<(), String> {
         match event {
-            CustomerEvent::CustomerCreated { id, name, initial_balance } => {
+            CustomerEvent::CustomerCreated {
+                id,
+                name,
+                initial_balance,
+            } => {
                 let customer = self.factory.create_customer(id, &name, initial_balance)?;
                 let customer_arc = Arc::new(Mutex::new(customer));
                 self.repository.save(customer_arc)?;
-            },
+            }
         }
         Ok(())
     }
@@ -244,24 +268,47 @@ impl OrderService {
     // 处理与订单相关的事件
     fn handle_event(&self, event: OrderEvent) -> Result<(), String> {
         match event {
-            OrderEvent::OrderPlaced { customer_id, order_id, amount, description } => {
-                let customer_arc = self.repository.find(&customer_id).ok_or("Customer not found".to_string())?;
-                let mut customer = customer_arc.lock().map_err(|_| "Failed to lock customer".to_string())?;
+            OrderEvent::OrderPlaced {
+                customer_id,
+                order_id,
+                amount,
+                description,
+            } => {
+                let customer_arc = self
+                    .repository
+                    .find(&customer_id)
+                    .ok_or("Customer not found".to_string())?;
+                let mut customer = customer_arc
+                    .lock()
+                    .map_err(|_| "Failed to lock customer".to_string())?;
                 customer.place_order_with_id(order_id, amount, &description)?;
-            },
-            OrderEvent::OrderCancelled { customer_id, order_id } => {
-                let customer_arc = self.repository.find(&customer_id).ok_or("Customer not found".to_string())?;
-                let mut customer = customer_arc.lock().map_err(|_| "Failed to lock customer".to_string())?;
+            }
+            OrderEvent::OrderCancelled {
+                customer_id,
+                order_id,
+            } => {
+                let customer_arc = self
+                    .repository
+                    .find(&customer_id)
+                    .ok_or("Customer not found".to_string())?;
+                let mut customer = customer_arc
+                    .lock()
+                    .map_err(|_| "Failed to lock customer".to_string())?;
                 customer.cancel_order(order_id)?;
-            },
+            }
         }
         Ok(())
     }
 
     // 查询特定客户的所有订单
     fn get_orders(&self, customer_id: Uuid) -> Result<Vec<Order>, String> {
-        let customer_arc = self.repository.find(&customer_id).ok_or("Customer not found".to_string())?;
-        let customer = customer_arc.lock().map_err(|_| "Failed to lock customer".to_string())?;
+        let customer_arc = self
+            .repository
+            .find(&customer_id)
+            .ok_or("Customer not found".to_string())?;
+        let customer = customer_arc
+            .lock()
+            .map_err(|_| "Failed to lock customer".to_string())?;
         Ok(customer.get_orders().clone())
     }
 }
@@ -278,24 +325,45 @@ impl BalanceService {
     // 处理与余额相关的事件
     fn handle_event(&self, event: BalanceEvent) -> Result<(), String> {
         match event {
-            BalanceEvent::BalanceDeposited { customer_id, amount } => {
-                let customer_arc = self.repository.find(&customer_id).ok_or("Customer not found".to_string())?;
-                let mut customer = customer_arc.lock().map_err(|_| "Failed to lock customer".to_string())?;
+            BalanceEvent::BalanceDeposited {
+                customer_id,
+                amount,
+            } => {
+                let customer_arc = self
+                    .repository
+                    .find(&customer_id)
+                    .ok_or("Customer not found".to_string())?;
+                let mut customer = customer_arc
+                    .lock()
+                    .map_err(|_| "Failed to lock customer".to_string())?;
                 customer.deposit(amount)?;
-            },
-            BalanceEvent::BalanceWithdrawn { customer_id, amount } => {
-                let customer_arc = self.repository.find(&customer_id).ok_or("Customer not found".to_string())?;
-                let mut customer = customer_arc.lock().map_err(|_| "Failed to lock customer".to_string())?;
+            }
+            BalanceEvent::BalanceWithdrawn {
+                customer_id,
+                amount,
+            } => {
+                let customer_arc = self
+                    .repository
+                    .find(&customer_id)
+                    .ok_or("Customer not found".to_string())?;
+                let mut customer = customer_arc
+                    .lock()
+                    .map_err(|_| "Failed to lock customer".to_string())?;
                 customer.withdraw(amount)?;
-            },
+            }
         }
         Ok(())
     }
 
     // 查询特定客户的余额
     fn get_balance(&self, customer_id: Uuid) -> Result<Money, String> {
-        let customer_arc = self.repository.find(&customer_id).ok_or("Customer not found".to_string())?;
-        let customer = customer_arc.lock().map_err(|_| "Failed to lock customer".to_string())?;
+        let customer_arc = self
+            .repository
+            .find(&customer_id)
+            .ok_or("Customer not found".to_string())?;
+        let customer = customer_arc
+            .lock()
+            .map_err(|_| "Failed to lock customer".to_string())?;
         Ok(customer.get_balance().clone())
     }
 }
@@ -458,7 +526,10 @@ mod tests {
         };
         let result = order_service.handle_event(order_place_event);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Insufficient balance to place order".to_string());
+        assert_eq!(
+            result.unwrap_err(),
+            "Insufficient balance to place order".to_string()
+        );
 
         let customer_arc = repo.find(&customer_id).unwrap();
         let customer = customer_arc.lock().unwrap();

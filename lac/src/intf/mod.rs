@@ -1,4 +1,3 @@
-
 pub enum LacError {
     SdkError,
     Uninitialized,

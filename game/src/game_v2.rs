@@ -48,8 +48,6 @@ fn any_of_rule(rules: Vec<Rule>) -> Rule {
     })
 }
 
-use super::Game;
-
 pub struct FizzBuzzWhizz {
     rule: Rule,
 }
@@ -73,6 +71,8 @@ impl FizzBuzzWhizz {
         }
     }
 }
+
+use super::Game;
 
 impl Game for FizzBuzzWhizz {
     fn apply(&self, number: u32) -> String {

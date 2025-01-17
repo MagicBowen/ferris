@@ -1,27 +1,17 @@
-use resource::allocation::Allocation;
-use resource::compute_cost;
-use resource::process::Process;
-use resource::resource::{Resource, ResourceType};
+use resource::*;
 
 #[test]
 #[cfg(feature = "platform_high")]
 fn compute_cost_and_penalty_of_process_in_high_platform() {
-    let r1 = Resource::new(ResourceType::CPU, 4);
-    let r2 = Resource::new(ResourceType::Memory, 2048);
-    let r3 = Resource::new(ResourceType::Storage, 100);
+    config_process(0).unwrap();
 
-    let a1 = Allocation::new(r1, 3);
-    let a2 = Allocation::new(r2, 2);
-    let a3 = Allocation::new(r3, 14);
-
-    let mut proc: Process = Process::new();
-    proc.add_allocation(a1);
-    proc.add_allocation(a2);
-    proc.add_allocation(a3);
+    config_allocation(0, 3, ResourceType::CPU, 4).unwrap();
+    config_allocation(0, 2, ResourceType::Memory, 2048).unwrap();
+    config_allocation(0, 14, ResourceType::Storage, 100).unwrap();
 
     let mut total = 0;
     let mut penalty = 0;
-    compute_cost(&proc, &mut total, &mut penalty);
+    compute_cost(0, &mut total, &mut penalty).unwrap();
 
     // 手动计算期望值:
     // CPU     : base 50 + (3-2)*10 = 50+10=60
@@ -36,19 +26,15 @@ fn compute_cost_and_penalty_of_process_in_high_platform() {
 #[test]
 #[cfg(feature = "platform_low")]
 fn compute_cost_and_penalty_of_process_in_low_platform() {
-    let r1 = Resource::new(ResourceType::CPU, 4);
-    let r2 = Resource::new(ResourceType::Memory, 2048);
+    config_process(1).unwrap();
+    assert!(config_process(1).is_err());
 
-    let a1 = Allocation::new(r1, 3);
-    let a2 = Allocation::new(r2, 2);
-
-    let mut proc: Process = Process::new();
-    proc.add_allocation(a1);
-    proc.add_allocation(a2);
+    config_allocation(1, 3, ResourceType::CPU, 4).unwrap();
+    config_allocation(1, 2, ResourceType::Memory, 2048).unwrap();
 
     let mut total = 0;
     let mut penalty = 0;
-    compute_cost(&proc, &mut total, &mut penalty);
+    compute_cost(1, &mut total, &mut penalty).unwrap();
 
     // 手动计算期望值:
     // CPU     : base 50 + (3-2)*10 = 50+10=60

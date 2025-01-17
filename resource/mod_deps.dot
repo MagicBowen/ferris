@@ -1,0 +1,45 @@
+digraph {
+
+    graph [
+        label="resource",
+        labelloc=t,
+
+        pad=0.4,
+
+        // Consider rendering the graph using a different layout algorithm, such as:
+        // [dot, neato, twopi, circo, fdp, sfdp]
+        layout=neato,
+        overlap=false,
+        splines="line",
+        rankdir=LR,
+
+        fontname="Helvetica", 
+        fontsize="36",
+    ];
+
+    node [
+        fontname="monospace",
+        fontsize="10",
+        shape="record",
+        style="filled",
+    ];
+
+    edge [
+        fontname="monospace",
+        fontsize="10",
+    ];
+
+    "resource" [label="crate|resource", fillcolor="#5397c8"]; // "crate" node
+    "resource::allocation" [label="pub mod|allocation", fillcolor="#81c169"]; // "mod" node
+    "resource::process" [label="pub mod|process", fillcolor="#81c169"]; // "mod" node
+    "resource::resource" [label="pub mod|resource", fillcolor="#81c169"]; // "mod" node
+    "resource::resource::cost_trait" [label="pub(self) mod|resource::cost_trait", fillcolor="#db5367"]; // "mod" node
+    "resource::resource::factory" [label="pub(self) mod|resource::factory", fillcolor="#db5367"]; // "mod" node
+
+    "resource" -> "resource::allocation" [label="owns", color="#000000", style="solid"] [constraint=true]; // "owns" edge
+    "resource" -> "resource::process" [label="owns", color="#000000", style="solid"] [constraint=true]; // "owns" edge
+    "resource" -> "resource::resource" [label="owns", color="#000000", style="solid"] [constraint=true]; // "owns" edge
+    "resource::resource" -> "resource::resource::cost_trait" [label="owns", color="#000000", style="solid"] [constraint=true]; // "owns" edge
+    "resource::resource" -> "resource::resource::factory" [label="owns", color="#000000", style="solid"] [constraint=true]; // "owns" edge
+
+}
