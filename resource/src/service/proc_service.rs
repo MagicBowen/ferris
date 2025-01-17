@@ -1,6 +1,6 @@
-use crate::domain::allocation::Allocation;
+use crate::domain::resource::ResourceType;
+use crate::domain::allocation::AllocationFactory;
 use crate::domain::process::{Pid, Process};
-use crate::domain::resource::{ResourceType,RESOURCE_FACTORY};
 use std::collections::HashMap;
 
 pub struct ProcService {
@@ -31,9 +31,7 @@ impl ProcService {
         capacity: i32,
     ) -> Result<(), String> {
         if let Some(proc) = self.proc_repo.get_mut(&pid) {
-            let resource = RESOURCE_FACTORY.create(res, capacity as u32);
-            let allocation = Allocation::new(resource, time);
-            proc.add_allocation(allocation);
+            proc.add_allocation(AllocationFactory::create(res, capacity, time));
             return Ok(());
         }
         Err(format!("Process with pid {} not found", pid))
