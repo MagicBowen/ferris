@@ -11,7 +11,7 @@ fn compute_cost_and_penalty_of_process_in_high_platform() {
 
     let mut total = 0;
     let mut penalty = 0;
-    compute_cost(0, &mut total, &mut penalty).unwrap();
+    compute_process(0, &mut total, &mut penalty).unwrap();
 
     // 手动计算期望值:
     // CPU     : base 50 + (3-2)*10 = 50+10=60
@@ -34,7 +34,7 @@ fn compute_cost_and_penalty_of_process_in_low_platform() {
 
     let mut total = 0;
     let mut penalty = 0;
-    compute_cost(1, &mut total, &mut penalty).unwrap();
+    compute_process(1, &mut total, &mut penalty).unwrap();
 
     // 手动计算期望值:
     // CPU     : base 50 + (3-2)*10 = 50+10=60

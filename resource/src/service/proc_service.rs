@@ -39,7 +39,7 @@ impl ProcService {
         Err(format!("Process with pid {} not found", pid))
     }
 
-    pub fn compute_cost(&self, pid: Pid) -> Result<(i32, i32), String> {
+    pub fn compute_process(&self, pid: Pid) -> Result<(i32, i32), String> {
         if let Some(proc) = self.proc_repo.get(&pid) {
             return Ok((proc.compute_cost(), proc.compute_penalty()));
         }
