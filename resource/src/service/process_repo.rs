@@ -1,18 +1,18 @@
 use std::collections::HashMap;
 use crate::domain::process::{Pid, Process};
 
-pub struct ProcRepo {
+pub struct ProcessRepo {
     procs: HashMap<Pid, Process>,
 }
 
-impl ProcRepo {
+impl ProcessRepo {
     pub fn new() -> Self {
-        ProcRepo {
+        ProcessRepo {
             procs: HashMap::new(),
         }
     }
 
-    pub fn add_proc(&mut self, pid: &Pid, proc: Process) -> Result<(), String> {
+    pub fn add_process(&mut self, pid: &Pid, proc: Process) -> Result<(), String> {
         if self.procs.contains_key(&pid) {
             return Err(format!("Process with pid {} already exists", pid));
         }
@@ -20,11 +20,11 @@ impl ProcRepo {
         Ok(())
     }
 
-    pub fn get_proc(&self, pid: &Pid) -> Option<&Process> {
+    pub fn get_process(&self, pid: &Pid) -> Option<&Process> {
         self.procs.get(&pid)
     }
 
-    pub fn get_proc_mut(&mut self, pid: &Pid) -> Option<&mut Process> {
+    pub fn get_process_mut(&mut self, pid: &Pid) -> Option<&mut Process> {
         self.procs.get_mut(&pid)
     }
 }

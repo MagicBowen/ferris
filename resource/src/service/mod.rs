@@ -1,2 +1,2 @@
-mod proc_repo;
+mod process_repo;
 pub mod proc_service;
