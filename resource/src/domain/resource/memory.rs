@@ -1,4 +1,4 @@
-use super::cost_trait::CostTrait;
+use super::Resource;
 use std::ops::{Add, Sub};
 
 #[derive(PartialEq, PartialOrd, Clone, Copy)]
@@ -45,8 +45,8 @@ impl Memory {
     const MEM_EXCEED_FACTOR: u32 = 2;
 }
 
-impl CostTrait for Memory {
-    fn cost(&self, usage_time: i32) -> i32 {
+impl Resource for Memory {
+    fn compute_cost(&self, usage_time: i32) -> i32 {
         let mut cost = 30;
         if self.mb_size > Self::BASIC_MEM_QUOTA {
             let exceed = self.mb_size - Self::BASIC_MEM_QUOTA;

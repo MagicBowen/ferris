@@ -1,4 +1,4 @@
-use super::cost_trait::CostTrait;
+use super::Resource;
 use std::ops::{Add, Sub};
 
 #[derive(PartialEq, PartialOrd, Clone, Copy)]
@@ -47,8 +47,8 @@ impl Storage {
     const STORAGE_PENALTY: u32 = 1; /* STORAGE 超出部分的计费因子 */
 }
 
-impl CostTrait for Storage {
-    fn cost(&self, usage_time: i32) -> i32 {
+impl Resource for Storage {
+    fn compute_cost(&self, usage_time: i32) -> i32 {
         let mut cost = 20;
         if usage_time > Self::BASIC_STORAGE_QUOTA as i32 {
             let exceed = (usage_time - Self::BASIC_STORAGE_QUOTA) as u32;
@@ -57,7 +57,7 @@ impl CostTrait for Storage {
         cost
     }
 
-    fn penalty(&self, usage_time: i32) -> i32 {
+    fn compute_penalty(&self, usage_time: i32) -> i32 {
         if usage_time > Self::STORAGE_PENALTY_THRESHOLD as i32 {
             Self::STORAGE_PENALTY as i32
         } else {
