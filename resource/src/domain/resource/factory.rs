@@ -2,7 +2,7 @@ use super::Resource;
 use super::ResourceType;
 use std::collections::HashMap;
 
-type FactoryFn = fn(capacity: u32) -> Box<dyn Resource>;
+type FactoryFn = fn(capacity: u32) -> Box<dyn Resource + Send + Sync>;
 pub struct ResourceFactory {
     registry: HashMap<ResourceType, FactoryFn>,
 }
@@ -18,7 +18,7 @@ impl ResourceFactory {
         self.registry.insert(resource_type, factory);
     }
 
-    pub fn create(&self, resource_type: ResourceType, capacity: u32) -> Box<dyn Resource> {
+    pub fn create(&self, resource_type: ResourceType, capacity: u32) -> Box<dyn Resource + Send + Sync> {
         if let Some(factory) = self.registry.get(&resource_type) {
             factory(capacity)
         } else {

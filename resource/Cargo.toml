@@ -9,7 +9,8 @@ resource_memory = []
 resource_storage = []
 platform_high = ["resource_cpu", "resource_memory", "resource_storage"]
 platform_low = ["resource_cpu", "resource_memory"]
-default = ["platform_low"]
+default = ["resource_cpu"]
 
 [dependencies]
 once_cell = "1.20.2"
+rayon = "1.10.0"

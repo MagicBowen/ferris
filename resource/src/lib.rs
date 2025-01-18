@@ -21,13 +21,25 @@ pub fn config_allocation(
 ) -> Result<(), String> {
     PROC_SERVICE.with(|proc_service| {
         proc_service
-            .borrow_mut()
+            .borrow()
             .add_allocation(pid, time, res, capacity)
     })
 }
 
 pub fn compute_process(pid: u32) -> Option<(i32, i32)> {
     PROC_SERVICE.with(|proc_service| {
-        proc_service.borrow_mut().compute_process(pid)
+        proc_service.borrow().compute_process(pid)
+    })
+}
+
+pub fn compute_all() -> Vec<(u32, i32, i32)> {
+    PROC_SERVICE.with(|proc_service| {
+        proc_service.borrow().compute_all()
+    })
+}
+
+pub fn compute_all_concurrent() -> Vec<(u32, i32, i32)> {
+    PROC_SERVICE.with(|proc_service| {
+        proc_service.borrow().compute_all_concurrent()
     })
 }

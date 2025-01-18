@@ -2,12 +2,12 @@ use crate::domain::resource::Resource;
 use crate::domain::resource::{ResourceType, RESOURCE_FACTORY};
 
 pub struct Allocation {
-    resource: Box<dyn Resource>,
+    resource: Box<dyn Resource + Send + Sync>,
     usage_time: i32,
 }
 
 impl Allocation {
-    pub fn new(resource: Box<dyn Resource>, usage_time: i32) -> Self {
+    pub fn new(resource: Box<dyn Resource + Send + Sync>, usage_time: i32) -> Self {
         Allocation {
             resource,
             usage_time,
