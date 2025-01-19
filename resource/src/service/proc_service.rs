@@ -1,7 +1,7 @@
-use crate::domain::resource::ResourceType;
+use super::process_repo::ProcessRepo;
 use crate::domain::allocation::AllocationFactory;
 use crate::domain::process::{Pid, Process};
-use super::process_repo::ProcessRepo;
+use crate::domain::resource::ResourceType;
 
 pub struct ProcService {
     proc_repo: ProcessRepo,
@@ -14,7 +14,7 @@ impl ProcService {
         }
     }
 
-    pub fn add_process(&mut self, pid: Pid) -> Result<(), String> {
+    pub fn add_process(&self, pid: Pid) -> Result<(), String> {
         self.proc_repo.add_process(&pid, Process::new())
     }
 
@@ -25,9 +25,10 @@ impl ProcService {
         res: ResourceType,
         capacity: i32,
     ) -> Result<(), String> {
-
         if let Some(proc) = self.proc_repo.get_process(&pid) {
-            proc.lock().unwrap().add_allocation(AllocationFactory::create(res, capacity, time));
+            proc.lock()
+                .unwrap()
+                .add_allocation(AllocationFactory::create(res, capacity, time));
             return Ok(());
         }
         Err(format!("Process with pid {} not found", pid))

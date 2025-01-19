@@ -10,7 +10,7 @@ thread_local! {
 }
 
 pub fn config_process(pid: u32) -> Result<(), String> {
-    PROC_SERVICE.with(|proc_service| proc_service.borrow_mut().add_process(pid))
+    PROC_SERVICE.with_borrow(|proc_service| proc_service.add_process(pid))
 }
 
 pub fn config_allocation(
@@ -19,27 +19,17 @@ pub fn config_allocation(
     res: ResourceType,
     capacity: i32,
 ) -> Result<(), String> {
-    PROC_SERVICE.with(|proc_service| {
-        proc_service
-            .borrow()
-            .add_allocation(pid, time, res, capacity)
-    })
+    PROC_SERVICE.with_borrow(|proc_service| proc_service.add_allocation(pid, time, res, capacity))
 }
 
 pub fn compute_process(pid: u32) -> Option<(i32, i32)> {
-    PROC_SERVICE.with(|proc_service| {
-        proc_service.borrow().compute_process(pid)
-    })
+    PROC_SERVICE.with_borrow(|proc_service| proc_service.compute_process(pid))
 }
 
 pub fn compute_all() -> Vec<(u32, i32, i32)> {
-    PROC_SERVICE.with(|proc_service| {
-        proc_service.borrow().compute_all()
-    })
+    PROC_SERVICE.with_borrow(|proc_service| proc_service.compute_all())
 }
 
 pub fn compute_all_concurrent() -> Vec<(u32, i32, i32)> {
-    PROC_SERVICE.with(|proc_service| {
-        proc_service.borrow().compute_all_concurrent()
-    })
+    PROC_SERVICE.with_borrow(|proc_service| proc_service.compute_all_concurrent())
 }

@@ -1,7 +1,7 @@
 mod factory;
 
-use once_cell::sync::Lazy;
 use factory::ResourceFactory;
+use once_cell::sync::Lazy;
 
 pub trait Resource {
     fn compute_cost(&self, usage_time: i32) -> i32;
@@ -44,34 +44,3 @@ pub static RESOURCE_FACTORY: Lazy<ResourceFactory> = Lazy::new(|| {
     });
     factory
 });
-
-
-// use std::sync::OnceLock;
-
-// struct ResourceFactoryInstance {
-//     factory: ResourceFactory,
-// }
-
-// static RESOURCE_FACTORY: OnceLock<ResourceFactoryInstance> = OnceLock::new();
-
-// impl ResourceFactoryInstance {
-//     pub fn get() -> &'static ResourceFactory {
-//         RESOURCE_FACTORY.get_or_init(|| ResourceFactoryInstance {
-//             factory: {
-//                 let mut factory = ResourceFactory::new();
-//                 #[cfg(feature = "resource_cpu")]
-//                 factory.register(ResourceType::CPU, |_: u32| Box::new(cpu::Cpu));
-//                 #[cfg(feature = "resource_memory")]
-//                 factory.register(ResourceType::Memory, |capacity: u32| {
-//                     Box::new(memory::Memory::new(capacity))
-//                 });
-//                 #[cfg(feature = "resource_storage")]
-//                 factory.register(ResourceType::Storage, |capacity: u32| {
-//                     Box::new(storage::Storage::new(capacity))
-//                 });
-//                 factory
-//             },
-//         });
-//         &RESOURCE_FACTORY.get().unwrap().factory
-//     }
-// }
