@@ -1,16 +1,16 @@
-use super::process_repo::ProcessRepo;
+use super::ProcessRepo;
 use crate::domain::allocation::AllocationFactory;
 use crate::domain::process::{Pid, Process};
 use crate::domain::resource::ResourceType;
 
-pub struct ProcService {
-    proc_repo: ProcessRepo,
+pub struct ProcService<'a> {
+    proc_repo: &'a ProcessRepo,
 }
 
-impl ProcService {
-    pub fn new() -> Self {
+impl<'a> ProcService<'a> {
+    pub fn new(repo: &'a ProcessRepo) -> Self {
         ProcService {
-            proc_repo: ProcessRepo::new(),
+            proc_repo: repo,
         }
     }
 

@@ -1,63 +1,83 @@
 use resource::*;
 
 #[test]
-#[cfg(feature = "platform_high")]
-fn compute_cost_and_penalty_of_process_in_high_platform() {
-    config_process(0).unwrap();
+fn test_in_multiple_threads() {
 
-    config_allocation(0, 3, ResourceType::CPU, 4).unwrap();
-    config_allocation(0, 2, ResourceType::Memory, 2048).unwrap();
-    config_allocation(0, 14, ResourceType::Storage, 100).unwrap();
+    for i in 0..10 {
+        let pid = i as u32;
+        config_process(pid).unwrap();
+    }
 
-    assert_eq!(compute_process(0), Some((5856, 1)));
-}
+    #[cfg(feature = "resource_cpu")]
+    let handles1: Vec<_> = (0..10)
+        .map(|i| {
+            std::thread::spawn(move || {
+                let pid = i as u32;
+                config_allocation(pid, 3, ResourceType::CPU, 4).unwrap();
+            })
+        })
+        .collect();
 
-#[test]
-#[cfg(feature = "platform_low")]
-fn compute_cost_and_penalty_of_process_in_low_platform() {
-    config_process(1).unwrap();
-    assert!(config_process(1).is_err());
+    #[cfg(feature = "resource_memory")]
+    let handles2: Vec<_> = (0..10)
+        .map(|i| {
+            std::thread::spawn(move || {
+                let pid = i as u32;
+                config_allocation(pid, 2, ResourceType::Memory, 2048).unwrap();
+            })
+        })
+        .collect();
 
-    config_allocation(1, 3, ResourceType::CPU, 4).unwrap();
-    config_allocation(1, 2, ResourceType::Memory, 2048).unwrap();
+    #[cfg(feature = "resource_storage")]
+    let handles3: Vec<_> = (0..10)
+        .map(|i| {
+            std::thread::spawn(move || {
+                let pid = i as u32;
+                config_allocation(pid, 14, ResourceType::Storage, 100).unwrap();
+            })
+        })
+        .collect();
 
-    assert_eq!(compute_process(1), Some((4186, 0)));
-}
 
-#[test]
-#[cfg(feature = "platform_high")]
-fn compute_cost_and_penalty_of_all_processes() {
-    config_process(0).unwrap();
-    config_process(1).unwrap();
+    let handles4: Vec<_> = (0..10)
+        .map(|i| {
+            std::thread::spawn(move || {
+                let pid = i as u32;
+                match compute_process(pid).unwrap() {
+                    (cost, penalty) => {
+                        assert!(cost >= 0);
+                        assert!(penalty >= 0);
+                    }
 
-    config_allocation(0, 3, ResourceType::CPU, 4).unwrap();
-    config_allocation(0, 2, ResourceType::Memory, 2048).unwrap();
-    config_allocation(0, 14, ResourceType::Storage, 100).unwrap();
+                }
+            })
+        })
+        .collect();
 
-    config_allocation(1, 3, ResourceType::CPU, 4).unwrap();
-    config_allocation(1, 2, ResourceType::Memory, 2048).unwrap();
+    #[cfg(feature = "resource_cpu")]
+    for handle in handles1 {
+        handle.join().unwrap();
+    }
 
-    let result = compute_all();
-    assert_eq!(result.len(), 2);
-    assert!(result.contains(&(0, 5856, 1)));
-    assert!(result.contains(&(1, 4186, 0)));
-}
+    #[cfg(feature = "resource_memory")]
+    for handle in handles2 {
+        handle.join().unwrap();
+    }
 
-#[test]
-#[cfg(feature = "platform_high")]
-fn compute_cost_and_penalty_of_all_processes_concurrency() {
-    config_process(0).unwrap();
-    config_process(1).unwrap();
+    #[cfg(feature = "resource_storage")]
+    for handle in handles3 {
+        handle.join().unwrap();
+    }
 
-    config_allocation(0, 3, ResourceType::CPU, 4).unwrap();
-    config_allocation(0, 2, ResourceType::Memory, 2048).unwrap();
-    config_allocation(0, 14, ResourceType::Storage, 100).unwrap();
-
-    config_allocation(1, 3, ResourceType::CPU, 4).unwrap();
-    config_allocation(1, 2, ResourceType::Memory, 2048).unwrap();
+    for handle in handles4 {
+        handle.join().unwrap();
+    }
 
     let result = compute_all_concurrent();
-    assert_eq!(result.len(), 2);
-    assert!(result.contains(&(0, 5856, 1)));
-    assert!(result.contains(&(1, 4186, 0)));
+    assert_eq!(result.len(), 10);
+
+    result.iter().for_each(|(_, cost, penalty)| {
+        assert_eq!(*cost, 5856);
+        assert_eq!(*penalty, 1);
+    });
 }

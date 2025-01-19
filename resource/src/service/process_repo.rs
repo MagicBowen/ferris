@@ -15,6 +15,11 @@ impl ProcessRepo {
         }
     }
 
+    pub fn clear(&self) {
+        let mut procs = self.procs.write().unwrap();
+        procs.clear();
+    }
+
     pub fn add_process(&self, pid: &Pid, proc: Process) -> Result<(), String> {
         let mut procs = self.procs.write().unwrap();
 
@@ -53,7 +58,7 @@ impl ProcessRepo {
             }
         });
     }
-    
+
     pub fn map_concurrent<F, R>(&self, f: F) -> Vec<R>
     where
         F: Fn(Pid, &Process) -> R + Send + Sync,
