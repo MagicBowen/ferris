@@ -1,8 +1,7 @@
 use crate::domain::process::{Pid, Process};
-use rayon::iter::IntoParallelRefIterator;
-use rayon::prelude::*;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, RwLock};
+use rayon::prelude::*;
 
 pub struct ProcessRepo {
     procs: RwLock<HashMap<Pid, Arc<Mutex<Process>>>>,

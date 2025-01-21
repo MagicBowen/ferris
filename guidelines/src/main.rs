@@ -1,3 +1,8 @@
+use std::cell::RefCell;
+
 fn main() {
-    println!("Hello, world!");
+    let mut rc = RefCell::new(String::from("hello"));
+
+    let mut s = rc.get_mut();
+    println!("{}", s);
 }

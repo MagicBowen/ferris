@@ -1,17 +1,8 @@
-use cfg_if::cfg_if;
-
+pub mod repo;
 pub mod proc_service;
-pub use proc_service::ProcService;
 
-cfg_if! {
-    if #[cfg(feature = "repo_normal")] {
-        pub mod process_repo;
-        pub use process_repo::ProcessRepo;
-    } else {
-        pub mod fast_process_repo;
-        pub use fast_process_repo::ProcessRepo;
-    }
-}
+pub use repo::ProcessRepo;
+pub use proc_service::ProcService;
 
 #[cfg(test)]
 
