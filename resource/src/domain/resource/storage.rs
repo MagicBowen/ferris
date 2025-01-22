@@ -1,7 +1,7 @@
 use super::Resource;
 use std::ops::{Add, Sub};
 
-#[derive(PartialEq, PartialOrd, Clone, Copy)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
 struct GB(u32);
 
 impl GB {
@@ -30,6 +30,7 @@ impl Sub for GB {
     }
 }
 
+#[derive(PartialEq, Eq, Hash)]
 pub struct Storage {
     gb_size: GB,
 }

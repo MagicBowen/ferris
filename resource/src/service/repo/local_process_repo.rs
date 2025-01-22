@@ -86,12 +86,12 @@ fn could_exec_CRUD_from_repo() {
     let repo = ProcessRepo::new();
     let pid = 0;
 
-    let mut proc = Process::new();
+    let mut proc = Process::new(pid);
     proc.add_allocation(AllocationFactory::create(ResourceType::CPU, 2, 3));
     repo.add_process(&pid, proc).expect("Could add process");
 
     let pid = 1;
-    let mut proc = Process::new();
+    let mut proc = Process::new(pid);
     proc.add_allocation(AllocationFactory::create(ResourceType::CPU, 4, 2));
     repo.add_process(&pid, proc).expect("Could add process");
 

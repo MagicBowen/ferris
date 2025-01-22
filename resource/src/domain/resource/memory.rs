@@ -1,7 +1,7 @@
 use super::Resource;
 use std::ops::{Add, Sub};
 
-#[derive(PartialEq, PartialOrd, Clone, Copy)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
 struct MB(u32);
 
 impl MB {
@@ -30,6 +30,7 @@ impl Sub for MB {
     }
 }
 
+#[derive(PartialEq, Eq, Hash)]
 pub struct Memory {
     mb_size: MB,
 }

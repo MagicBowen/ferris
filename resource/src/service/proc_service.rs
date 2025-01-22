@@ -13,7 +13,7 @@ impl<'a> ProcService<'a> {
     }
 
     pub fn add_process(&self, pid: Pid) -> Result<(), String> {
-        self.proc_repo.add_process(&pid, Process::new())
+        self.proc_repo.add_process(&pid, Process::new(pid))
     }
 
     pub fn add_allocation(
