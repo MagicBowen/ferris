@@ -26,10 +26,6 @@ impl ProcessRepo {
         }
     }
 
-    pub fn clear(&self) {
-        self.procs.borrow_mut().clear();
-    }
-
     pub fn add_process(&self, pid: &Pid, proc: Process) -> Result<(), String> {
         if self.procs.borrow().contains_key(pid) {
             return Err(format!("Process with pid {} already exists", pid));

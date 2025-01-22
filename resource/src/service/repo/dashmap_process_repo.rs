@@ -14,10 +14,6 @@ impl ProcessRepo {
         }
     }
 
-    pub fn clear(&self) {
-        self.procs.clear();
-    }
-
     pub fn add_process(&self, pid: &Pid, proc: Process) -> Result<(), String> {
         if self.procs.contains_key(pid) {
             return Err(format!("Process with pid {} already exists", pid));

@@ -14,11 +14,6 @@ impl ProcessRepo {
         }
     }
 
-    pub fn clear(&self) {
-        let mut procs = self.procs.write().unwrap();
-        procs.clear();
-    }
-
     pub fn add_process(&self, pid: &Pid, proc: Process) -> Result<(), String> {
         let mut procs = self.procs.write().unwrap();
 
