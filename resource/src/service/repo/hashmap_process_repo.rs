@@ -1,7 +1,7 @@
 use crate::domain::process::{Pid, Process};
+use rayon::prelude::*;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, RwLock};
-use rayon::prelude::*;
 
 pub struct ProcessRepo {
     procs: RwLock<HashMap<Pid, Arc<Mutex<Process>>>>,
@@ -37,7 +37,7 @@ impl ProcessRepo {
 
         procs.iter().for_each(|(&pid, proc_mutex)| {
             if let Ok(process) = proc_mutex.lock() {
-            f(pid, &*process);
+                f(pid, &*process);
             }
         });
     }
@@ -48,7 +48,7 @@ impl ProcessRepo {
 
         procs.iter().for_each(|(&pid, proc_mutex)| {
             if let Ok(mut process) = proc_mutex.lock() {
-            f(pid, &mut *process);
+                f(pid, &mut *process);
             }
         });
     }

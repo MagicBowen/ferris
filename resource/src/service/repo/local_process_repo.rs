@@ -1,22 +1,23 @@
 use crate::domain::process::{Pid, Process};
-use std::collections::HashMap;
-use std::cell::RefCell;
 use rayon::prelude::*;
+use std::cell::{RefCell, RefMut};
+use std::collections::HashMap;
+use std::rc::Rc;
 
-pub struct LocalMutex<T>(RefCell<T>);
+#[derive(Clone)]
+pub struct ProcessHandle(Rc<RefCell<Process>>);
 
-impl<T> LocalMutex<T> {
-    pub fn new(value: T) -> Self {
-        Self(RefCell::new(value))
-    }
-
-    pub fn lock(&mut self) -> Result<&mut T, ()> {
-        Ok(self.0.get_mut())
+impl ProcessHandle {
+    pub fn lock(&self) -> Option<RefMut<Process>> {
+        Some(self.0.borrow_mut())
     }
 }
 
+unsafe impl Send for ProcessHandle {}
+unsafe impl Sync for ProcessHandle {}
+
 pub struct ProcessRepo {
-    procs: RefCell<HashMap<Pid, LocalMutex<Process>>>,
+    procs: RefCell<HashMap<Pid, ProcessHandle>>,
 }
 
 impl ProcessRepo {
@@ -30,12 +31,15 @@ impl ProcessRepo {
         if self.procs.borrow().contains_key(pid) {
             return Err(format!("Process with pid {} already exists", pid));
         }
-        self.procs.borrow_mut().insert(*pid, LocalMutex::new(proc));
+        self.procs
+            .borrow_mut()
+            .insert(*pid, ProcessHandle(Rc::new(RefCell::new(proc))));
         Ok(())
     }
 
-    pub fn get_process(&self, pid: &Pid) -> Option<&LocalMutex<Process>> {
-        self.procs.borrow().get(pid)
+    pub fn get_process(&self, pid: &Pid) -> Option<ProcessHandle> {
+        let procs = self.procs.borrow();
+        procs.get(pid).cloned()
     }
 
     pub fn for_each<F>(&self, mut f: F)
@@ -44,8 +48,8 @@ impl ProcessRepo {
     {
         let procs = self.procs.borrow();
 
-        procs.iter().for_each(|(&pid, process)| {
-            f(pid, process.lock().unwrap());
+        procs.iter().for_each(|(pid, process)| {
+            f(*pid, &process.0.borrow());
         });
     }
 
@@ -54,7 +58,7 @@ impl ProcessRepo {
         let mut procs = self.procs.borrow_mut();
 
         procs.iter_mut().for_each(|(pid, process)| {
-            f(*pid, &mut process.lock().unwrap());
+            f(*pid, &mut process.0.borrow_mut());
         });
     }
 
@@ -65,6 +69,34 @@ impl ProcessRepo {
     {
         let procs = self.procs.borrow();
 
-        procs.par_iter().map(|(&pid, process)| f(pid, process.lock().unwrap())).collect()
+        procs
+            .par_iter()
+            .map(|(&pid, process)| f(pid, &process.0.borrow()))
+            .collect()
     }
+}
+
+#[cfg(test)]
+use super::*;
+use crate::domain::allocation::AllocationFactory;
+use crate::ResourceType;
+
+#[test]
+fn could_exec_CRUD_from_repo() {
+    let repo = ProcessRepo::new();
+    let pid = 0;
+
+    let mut proc = Process::new();
+    proc.add_allocation(AllocationFactory::create(ResourceType::CPU, 2, 3));
+    repo.add_process(&pid, proc).expect("Could add process");
+
+    let pid = 1;
+    let mut proc = Process::new();
+    proc.add_allocation(AllocationFactory::create(ResourceType::CPU, 4, 2));
+    repo.add_process(&pid, proc).expect("Could add process");
+
+    let result =
+        repo.map_concurrent(|pid, proc| (pid, proc.compute_cost(), proc.compute_penalty()));
+
+    assert_eq!(result.len(), 2);
 }

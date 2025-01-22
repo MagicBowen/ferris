@@ -1,6 +1,6 @@
-use crate::ResourceType;
 use crate::service::ProcService;
 use crate::service::ProcessRepo;
+use crate::ResourceType;
 
 use lazy_static::lazy_static;
 

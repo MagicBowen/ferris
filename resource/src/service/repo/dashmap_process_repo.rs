@@ -1,7 +1,7 @@
 use crate::domain::process::{Pid, Process};
 use dashmap::DashMap;
-use std::sync::{Arc, Mutex};
 use rayon::prelude::*;
+use std::sync::{Arc, Mutex};
 
 pub struct ProcessRepo {
     procs: DashMap<Pid, Arc<Mutex<Process>>>,

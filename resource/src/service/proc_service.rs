@@ -9,9 +9,7 @@ pub struct ProcService<'a> {
 
 impl<'a> ProcService<'a> {
     pub fn new(repo: &'a ProcessRepo) -> Self {
-        ProcService {
-            proc_repo: repo,
-        }
+        ProcService { proc_repo: repo }
     }
 
     pub fn add_process(&self, pid: Pid) -> Result<(), String> {

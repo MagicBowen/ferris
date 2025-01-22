@@ -1,12 +1,15 @@
-use crate::ResourceType;
 use crate::service::ProcService;
 use crate::service::ProcessRepo;
+use crate::ResourceType;
 
 use std::cell::RefCell;
 
 thread_local! {
     static PROCESS_REPO: RefCell<ProcessRepo> = RefCell::new(ProcessRepo::new());
-    static PROC_SERVICE: RefCell<ProcService<'static>> = RefCell::new(ProcService::new(PROCESS_REPO.with_borrow(|r| r)));
+    static PROC_SERVICE: RefCell<ProcService<'static>> = {
+        let repo_ptr = PROCESS_REPO.with(|r| r.as_ptr());
+        RefCell::new(ProcService::new(unsafe { &*repo_ptr }))
+    };
 }
 
 pub fn config_process(pid: u32) -> Result<(), String> {

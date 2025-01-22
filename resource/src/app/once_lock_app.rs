@@ -1,6 +1,6 @@
-use crate::ResourceType;
 use crate::service::ProcService;
 use crate::service::ProcessRepo;
+use crate::ResourceType;
 
 use std::sync::OnceLock;
 
@@ -8,7 +8,7 @@ static PROCESS_REPO: OnceLock<ProcessRepo> = OnceLock::new();
 static PROC_SERVICE: OnceLock<ProcService<'static>> = OnceLock::new();
 
 fn get_process_repo() -> &'static ProcessRepo {
-    PROCESS_REPO.get_or_init(|| ProcessRepo::new())
+    PROCESS_REPO.get_or_init(ProcessRepo::new)
 }
 
 fn get_proc_service() -> &'static ProcService<'static> {

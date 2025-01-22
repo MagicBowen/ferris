@@ -15,7 +15,7 @@ repo_dashmap = []
 
 singleton_local_thread = ["repo_local"]
 singleton_lazy_static = ["repo_dashmap"]
-singletom_once_lock = ["repo_dashmap"]
+singleton_once_lock = ["repo_dashmap"]
 
 platform_high = ["resource_cpu", "resource_memory", "resource_storage"]
 platform_low = ["resource_cpu", "resource_memory"]
