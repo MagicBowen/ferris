@@ -2,8 +2,14 @@ use std::string;
 use lazy_static::lazy_static;
 
 trait Matcher: Send + Sync {
-    fn matches(&self, number: u32) -> bool;
+    fn matches(&self, _: u32) -> bool {
+        return true;
+    }
 }
+
+struct AlwaysMatcher;
+
+impl Matcher for AlwaysMatcher {}
 
 struct DivMatcher {
     divisor: u32,
@@ -40,17 +46,15 @@ impl Matcher for ContainsMatcher {
     }
 }
 
-struct AlwaysMatcher;
-
-impl Matcher for AlwaysMatcher {
-    fn matches(&self, _number: u32) -> bool {
-        true
+trait Action: Send + Sync {
+    fn say(&self, number: u32) -> String {
+        string::ToString::to_string(&number)
     }
 }
 
-trait Action: Send + Sync {
-    fn say(&self, number: u32) -> String;
-}
+struct NumberAction;
+
+impl Action for NumberAction {}
 
 struct StringAction {
     output: String,
@@ -65,16 +69,8 @@ impl StringAction {
 }
 
 impl Action for StringAction {
-    fn say(&self, _number: u32) -> String {
+    fn say(&self, _: u32) -> String {
         self.output.clone()
-    }
-}
-
-struct NumberAction;
-
-impl Action for NumberAction {
-    fn say(&self, number: u32) -> String {
-        string::ToString::to_string(&number)
     }
 }
 
@@ -93,7 +89,7 @@ impl<M: Matcher, A: Action> AtomRule<M, A> {
     }
 }
 
-impl<M: Matcher + 'static, A: Action + 'static> Rule for AtomRule<M, A> {
+impl<M: Matcher, A: Action> Rule for AtomRule<M, A> {
     fn apply(&self, number: u32) -> String {
         if self.matcher.matches(number) {
             self.action.say(number)
@@ -103,11 +99,11 @@ impl<M: Matcher + 'static, A: Action + 'static> Rule for AtomRule<M, A> {
     }
 }
 
-struct AllOfRules {
-    rules: Vec<&'static dyn Rule>,
+struct AllOfRules<'a> {
+    rules: Vec<&'a dyn Rule>,
 }
 
-impl Rule for AllOfRules {
+impl<'a> Rule for AllOfRules<'a> {
     fn apply(&self, number: u32) -> String {
         self.rules
             .iter()
@@ -116,11 +112,11 @@ impl Rule for AllOfRules {
     }
 }
 
-struct AnyOfRules {
-    rules: Vec<&'static dyn Rule>,
+struct AnyOfRules<'a> {
+    rules: Vec<&'a dyn Rule>,
 }
 
-impl Rule for AnyOfRules {
+impl<'a> Rule for AnyOfRules<'a> {
     fn apply(&self, number: u32) -> String {
         self.rules
             .iter()
@@ -130,59 +126,93 @@ impl Rule for AnyOfRules {
     }
 }
 
+pub struct FizzBuzzWhizz<'a> {
+    rule: &'a dyn Rule,
+}
+
 lazy_static! {
-    static ref CONTAINS_RULE: AtomRule<ContainsMatcher, StringAction> = AtomRule::new(
+    static ref CONTAINS_3: AtomRule<ContainsMatcher, StringAction> = AtomRule::new(
         ContainsMatcher::new(3),
         StringAction::new("fizz")
     );
-    static ref DIV3_RULE: AtomRule<DivMatcher, StringAction> = AtomRule::new(
+    static ref DIV_3: AtomRule<DivMatcher, StringAction> = AtomRule::new(
         DivMatcher::new(3),
         StringAction::new("fizz")
     );
-    static ref DIV5_RULE: AtomRule<DivMatcher, StringAction> = AtomRule::new(
+    static ref DIV_5: AtomRule<DivMatcher, StringAction> = AtomRule::new(
         DivMatcher::new(5),
         StringAction::new("buzz")
     );
-    static ref DIV7_RULE: AtomRule<DivMatcher, StringAction> = AtomRule::new(
+    static ref DIV_7: AtomRule<DivMatcher, StringAction> = AtomRule::new(
         DivMatcher::new(7),
         StringAction::new("whizz")
     );
-    static ref ALWAYS_RULE: AtomRule<AlwaysMatcher, NumberAction> = AtomRule::new(
+    static ref DEFAULT_RULE: AtomRule<AlwaysMatcher, NumberAction> = AtomRule::new(
         AlwaysMatcher,
         NumberAction
-    );
-    static ref ALL_OF_RULES: AllOfRules = AllOfRules {
-        rules: vec![
-            &*DIV3_RULE as &dyn Rule,
-            &*DIV5_RULE,
-            &*DIV7_RULE,
-        ]
+    );    
+    static ref ALL_OF_RULES: AllOfRules<'static> = AllOfRules {
+        rules: vec![&*DIV_3, &*DIV_5, &*DIV_7]
     };
-    static ref ANY_OF_RULES: AnyOfRules = AnyOfRules {
-        rules: vec![
-            &*CONTAINS_RULE as &dyn Rule,
-            &*ALL_OF_RULES,
-            &*ALWAYS_RULE,
-        ]
+    static ref ANY_OF_RULES: AnyOfRules<'static> = AnyOfRules {
+        rules: vec![&*CONTAINS_3, &*ALL_OF_RULES, &*DEFAULT_RULE]
     };
 }
 
-pub struct FizzBuzzWhizz {
-    rule: &'static dyn Rule,
-}
+impl<'a> FizzBuzzWhizz<'a> {
+    fn from_rule(rules: &'a dyn Rule) -> Self {
+        FizzBuzzWhizz { rule: rules }
+    }
 
-impl FizzBuzzWhizz {
     pub fn new() -> Self {
-        FizzBuzzWhizz {
-            rule: &*ANY_OF_RULES,
-        }
+        Self::from_rule(&*ANY_OF_RULES)
     }
 }
 
 use super::Game;
 
-impl Game for FizzBuzzWhizz {
+impl<'a> Game for FizzBuzzWhizz<'a> {
     fn apply(&self, number: u32) -> String {
         self.rule.apply(number)
     }
 }
+
+#[cfg(test)]
+#[test]
+fn test_fizz_buzz_whizz() {
+    let contain_3 = AtomRule::new(ContainsMatcher::new(3), StringAction::new("fizz"));
+    let div_3 = AtomRule::new(DivMatcher::new(3), StringAction::new("fizz"));
+    let div_5 = AtomRule::new(DivMatcher::new(5), StringAction::new("buzz"));
+    let div_7 = AtomRule::new(DivMatcher::new(7), StringAction::new("whizz"));
+    let default_rule = AtomRule::new(AlwaysMatcher, NumberAction);
+
+    let all_of_rules = AllOfRules {
+        rules: vec![&div_3, &div_5, &div_7],
+    };
+
+    let any_of_rules = AnyOfRules {
+        rules: vec![&contain_3, &all_of_rules, &default_rule],
+    };
+
+    let game = FizzBuzzWhizz::from_rule(&any_of_rules);
+
+    let test_cases = vec![
+        (1, "1"),
+        (2, "2"),        
+        (3, "fizz"),
+        (5, "buzz"),
+        (7, "whizz"),
+        (13, "fizz"),
+        (15, "fizzbuzz"),
+        (21, "fizzwhizz"),
+        (31, "fizz"),
+        (35, "fizz"),
+        (70, "buzzwhizz"),
+        (105, "fizzbuzzwhizz"),
+    ];
+
+    for (input, expected_output) in test_cases {
+        let result = game.apply(input);
+        assert_eq!(result, expected_output, "For input {}, expected {} but got {}", input, expected_output, result);
+    }
+} 
