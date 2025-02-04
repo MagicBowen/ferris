@@ -19,6 +19,7 @@ default = []
 game_v1 = []
 game_v2 = []
 game_v3 = []
+game_v4 = []
 parallel = ["rayon"]
 
 [dependencies]

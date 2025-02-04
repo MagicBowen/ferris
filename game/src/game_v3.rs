@@ -1,5 +1,5 @@
-use std::string;
 use lazy_static::lazy_static;
+use std::string;
 
 trait Matcher: Send + Sync {
     fn matches(&self, _: u32) -> bool {
