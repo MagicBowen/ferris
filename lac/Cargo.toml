@@ -5,8 +5,8 @@ edition = "2021"
 
 [features]
 default = []
-use_bindgen = ["bindgen"]
-use_sdk_stubs = []
+bindgen = ["bindgen"]
+sdk_stub = []
 
 [dependencies]
 
@@ -15,4 +15,4 @@ cc = "1.0"
 bindgen = { version = "0.71.1", optional = true }
 
 [dev-dependencies]
-lac = { path = ".", features = ["use_sdk_stubs"] }
+lac = { path = ".", features = ["sdk_stub"] }

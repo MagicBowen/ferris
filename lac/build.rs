@@ -1,9 +1,9 @@
 use std::env;
 
 fn main() {
-    let use_sdk_stubs = env::var("CARGO_FEATURE_USE_SDK_STUBS").is_ok();
+    let sdk_stub = env::var("CARGO_FEATURE_SDK_STUB").is_ok();
 
-    if use_sdk_stubs {
+    if sdk_stub {
         println!("cargo:rerun-if-changed=tests/c_stubs/");
 
         cc::Build::new()
@@ -18,7 +18,7 @@ fn main() {
             .compile("chip_sdk_stub");
     }
 
-    #[cfg(feature = "use_bindgen")]
+    #[cfg(feature = "bindgen")]
     {
         let bindings = bindgen::Builder::default()
             .header("tests/c_stubs/chip_sdk.h")
